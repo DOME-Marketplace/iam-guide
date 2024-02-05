@@ -1,0 +1,241 @@
+---
+title: DOME Identity and Access Management - Guide for implementers
+
+editors:
+    - name: "Jesus Ruiz"
+      email: "hesusruiz@gmail.com"
+      company: "JesusRuiz"
+      companyURL: "https://hesusruiz.github.io/"
+authors:
+    - name: "The DOME project participants"
+
+copyright: >
+   Copyright © 2024 the document editors/authors. Text is available under the
+   <a rel="license" href="https://creativecommons.org/licenses/by/4.0/legalcode">
+   Creative Commons Attribution 4.0 International Public License</a>
+
+latestVersion: "https://dome-marketplace.github.io/iam-guide/index.html"
+edDraftURI: "https://dome-marketplace.github.io/iam-guide/index.html"
+github: "https://github.com/dome-marketplace/iam-guide"
+og_description: >
+    DOME Identity and Access Management - Guide for implementers
+og_site_name: DOME Identity and Access Management
+localBiblioFile: "localbiblio.yaml"
+---
+
+<section #abstract>
+
+    We describe a mechanism enabling **Decentralised Identity and Access Management in B2B** ecosystems which require a high level of legal certainty, reduced manual processes and reduced dependency in third parties for the operation of the ecosystem. It combines eIDAS X.509 certificates issued by QTSPs with advanced or qualified signatures and seals of Verifiable Credentials. 
+
+    The mechanism enables authentication and access control of **entities acting on behalf of a legal person** with much more descriptive power and flexibility than trying to use just X.509 certificates of representation, and in a more efficient and automated way than using just signed PDFs.
+
+    The mechanism is aligned with the upcoming EDIW (European Digital Identity Wallet) and its supporting eIDAS2 regulation, but it advances the state of the art by focusing entirely on **legal persons** with an implementation that can be used today without the need to wait for future supporting regulation.
+    
+    In particular, we support natural persons acting on behalf of legal entities (e.g., employees or contractors of a business), interacting with other legal entities. The mechanism is **not recommended for natural persons acting as citizens**, even if technically the mechanism could be adapted. For citizens we recommend to wait for eIDAS2 and EDIW.
+    
+    The mechanism leverages Verifiable Credentials and the existing eIDAS framework by:
+    
+    <ul>
+        - making the credential a **machine-readable e-mandate** by embedding authorisation information in the credential using a formal language and binding it to the identities of the issuer and subject.
+        - making the credential a **legally binding document** under the [[eIDAS]] framework, by signing the credential with an advanced or qualified seal/signature.
+        - making the credential an **authentication mechanism**, by binding the identities of the subject and holder of the credential so it can be used for authentication.
+    
+    In this way, the credential is a **legally binding machine-readable document where the issuer attests that it delegates the set of powers specified in the credential to the user identified as the subject of the credential**.
+    
+    The subject can then **use the credential to authenticate to a Relying Party** because the identities of holder and subject of the credential are bound.
+
+    This mechanism leverages the eIDAS trust framework using advanced or qualified signatures and seals to provide a **high level of legal certainty and enjoying the presumption of non-repudiation in the courts**, something that does not happen when using other types of basic signatures.
+
+<section id="conformance">
+
+<x-include @"LEARCredential/index.rite">
+
+<section #glossary>Glossary
+
+    As far as possible and in order to enhance consistency with the regulation, we use in this document the following definitions, which is essentially a subset of the definitions in Article 3 of the document [[eIDAS2.Regulation]] and in the original [[[eIDAS.Regulation]]].
+
+    This is the reason why in some definitions below the description refers to an article or section that does not exist in this document. We have decided to keep the definitions like in the original, as we think it does not limit the understanding of the concept.
+
+    <dl>
+
+        <dt>electronic identification
+        <dd>means the process of using person identification data in electronic form uniquely representing either a natural or legal person, or a natural person representing a legal person;
+
+        <dt>electronic identification means
+        <dd>means a material and/or immaterial unit, including European Digital Identity Wallets or ID cards following Regulation 2019/1157, containing person identification data and which is used for authentication for an online or offline service:
+
+        <dt>person identification data
+        <dd>means a set of data, issued in accordance with national law, enabling the identity of a natural or legal person, or a natural person representing a legal person to be established;
+
+        <dt>electronic identification scheme
+        <dd>means a system for electronic identification under which electronic identification means, are issued to natural or legal persons or natural persons representing legal or natural persons;
+
+        <dt>user
+        <dd>means a natural or legal person, or a natural person representing a legal person using trust services, notified electronic identification means or European Digital Identity Wallets;
+
+        <dt>authentication 
+        <dd>means an electronic process that enables the verification of the origin and integrity of data in electronic form;
+
+        <dt>identification 
+        <dd>means an electronic process that establish an unequivocal relationship between a set of data and a natural or legal person;
+
+        <dt>validation 
+        <dd>means the process of verifying that an electronic signature, an electronic seal, a European Digital Identity Wallet, an electronic identification mean, a relying party authorisation, person identification data, an electronic attestation of attributes or any electronic certificates for trust services is valid and has not been revoked;
+
+        <dt>zero knowledge proof 
+        <dd>means cryptographic methods by which a relying party can validate that a given statement based on the electronic attestation of attributes held in a user's European Digital Identity Wallet is true, without conveying any data related to those electronic attestation of attributes to the relying party;
+
+        <dt>relying party 
+        <dd>means a natural or legal person that relies upon an electronic identification means, including European Digital Identity Wallets, or a trust service, directly or through an intermediary, in order to provide services;
+
+        <dt>public sector body 
+        <dd>means a state, regional or local authority, a body governed by public law or an association formed by one or several such authorities or one or several such bodies governed by public law, or  private entity mandated by at least one of those authorities, bodies or associations to provide public services, when acting under such a mandate;
+
+        <dt>body governed by public law 
+        <dd>means a body defined in point (4) of Article 2(1) of Directive 2014/24/EU of the European Parliament and of the Council (1);
+
+        <dt>signatory 
+        <dd>means a natural person who creates an electronic signature;
+
+        <dt>electronic signature 
+        <dd>means data in electronic form which is attached to or logically associated with other data in electronic form and which is used by the signatory to sign;
+
+        <dt>advanced electronic signature 
+        <dd>means an electronic signature which meets the requirements set out in Article 26;
+
+        <dt>qualified electronic signature 
+        <dd>means an advanced electronic signature that is created by a qualified electronic signature creation device, and which is based on a qualified certificate for electronic signatures;
+
+        <dt>electronic signature creation data 
+        <dd>means unique data which is used by the signatory to create an electronic signature;
+
+        <dt>certificate for electronic signature 
+        <dd>means an electronic attestation which links electronic signature validation data to a natural person and confirms at least the name or the pseudonym of that person;
+
+        <dt>qualified certificate for electronic signature 
+        <dd>means a certificate for electronic signatures, that is issued by a qualified trust service provider and meets the requirements laid down in Annex I;
+
+        // (16) ‘trust service’ from eIDAS2
+        <dt>trust service 
+        <dd>means an electronic service normally provided against payment which consists of:
+            <ul>
+                - (a) the creation, verification, and validation of electronic signatures, electronic seals or electronic time stamps, electronic registered delivery services, electronic attestation of attributes and certificates related to those services;
+
+                - (b) the creation, verification and validation of certificates for website authentication;
+
+                - (c) the preservation of electronic signatures, seals or certificates related to those services;
+
+                - (d) the electronic archiving of electronic documents;
+
+                - (e) the management of remote electronic signature and seal creation devices;
+
+        // (17) ‘qualified trust service’ from eIDAS1
+        <dt>qualified trust service 
+        <dd>means a trust service that meets the applicable requirements laid down in this Regulation;
+
+        // (18) ‘conformity assessment body’ from eIDAS1
+        <dt>conformity assessment body 
+        <dd>means a body defined in point 13 of Article 2 of Regulation (EC) No 765/2008, which is accredited in accordance with that Regulation as competent to carry out conformity assessment of a qualified trust service provider and the qualified trust services it provides;
+
+        // (19) ‘trust service provider’ from eIDAS1
+        <dt>trust service provider 
+        <dd>means a natural or a legal person who provides one or more trust services either as a qualified or as a non-qualified trust service provider;
+
+        // (20) ‘qualified trust service provider’ from eIDAS1
+        <dt>qualified trust service provider 
+        <dd>means a trust service provider who provides one or more qualified trust services and is granted the qualified status by the supervisory body;
+
+        // (25) ‘electronic seal’ from eIDAS1
+        <dt>electronic seal 
+        <dd>means data in electronic form, which is attached to or logically associated with other data in electronic form to ensure the latter’s origin and integrity;
+
+        // (26) ‘advanced electronic seal’ from eIDAS1
+        <dt>advanced electronic seal 
+        <dd>means an electronic seal, which meets the requirements set out in Article 36;
+
+        // (27) ‘qualified electronic seal’ from eIDAS1
+        <dt>qualified electronic seal 
+        <dd>means an advanced electronic seal, which is created by a qualified electronic seal creation device, and that is based on a qualified certificate for electronic seal;
+
+        // (28) ‘electronic seal creation data’ from eIDAS1
+        <dt>electronic seal creation data 
+        <dd>means unique data, which is used by the creator of the electronic seal to create an electronic seal;
+
+        // (29) ‘certificate for electronic seal’ from eIDAS2
+        <dt>certificate for electronic seal 
+        <dd>means an electronic attestation or set of attestations that links electronic seal validation data to a legal person and confirms the name of that person;
+
+        // (30) ‘qualified certificate for electronic seal’ from eIDAS1
+        <dt>qualified certificate for electronic seal 
+        <dd>means a certificate for an electronic seal, that is issued by a qualified trust service provider and meets the requirements laid down in Annex III;
+
+        // (31) ‘electronic seal creation device’ from eIDAS1
+        <dt>electronic seal creation device 
+        <dd>means configured software or hardware used to create an electronic seal;
+
+        // (32) ‘qualified electronic seal creation device’ from eIDAS1
+        <dt>qualified electronic seal creation device 
+        <dd>means an electronic seal creation device that meets mutatis mutandis the requirements laid down in Annex II of [[eIDAS.Regulation]];
+
+        // (33) ‘electronic time stamp’ from eIDAS1
+        <dt>electronic time stamp 
+        <dd>means data in electronic form which binds other data in electronic form to a particular time establishing evidence that the latter data existed at that time;
+
+        // (34) ‘qualified electronic time stamp’ from eIDAS1
+        <dt>qualified electronic time stamp 
+        <dd>means an electronic time stamp which meets the requirements laid down in Article 42 of [[eIDAS.Regulation]];
+
+        // (35) ‘electronic document’ from eIDAS1
+        <dt>electronic document 
+        <dd>means any content stored in electronic form, in particular text or sound, visual or audiovisual recording;
+
+        // (36) ‘electronic registered delivery service’ from eIDAS1
+        <dt>electronic registered delivery service 
+        <dd>means a service that makes it possible to transmit data between third parties by electronic means and provides evidence relating to the handling of the transmitted data, including proof of sending and receiving the data, and that protects transmitted data against the risk of loss, theft, damage or any unauthorised alterations;
+
+        // (37) ‘qualified electronic registered delivery service’ from eIDAS1
+        <dt>qualified electronic registered delivery service 
+        <dd>means an electronic registered delivery service which meets the requirements laid down in Article 44;
+
+        // (42) ‘European Digital Identity Wallet’ from eIDAS2
+        <dt>European Digital Identity Wallet 
+        <dd>means an electronic identification means which securely stores, manages and validates identity data and electronic attestations of attributes, to provide them to relying parties and other users of European Digital Identity Wallets on request, and which enables the creation of qualified electronic signatures and seals;
+
+        // (43) ‘attribute’ from eIDAS2
+        <dt>attribute 
+        <dd>is a feature, characteristic or quality of a natural or legal person or of an entity;
+
+        <dt>electronic attestation of attributes 
+        <dd>means an attestation in electronic form that allows the presentation and authentication of attributes;
+
+        <dt>qualified electronic attestation of attributes 
+        <dd>means an electronic attestation of attributes, which is issued by a qualified trust service provider and meets the requirements laid down in Annex V;
+
+        <dt>authentic source 
+        <dd>is a repository or system, held under the responsibility of a public sector body or private entity, that contains attributes about a natural or legal person and is considered to be the primary source of that information or recognised as authentic in Union or national law;
+
+        <dt>electronic archiving 
+        <dd>means a service ensuring preservation of electronic data or documents in order to guarantee their integrity, the accuracy of their origin and legal features throughout the conservation period;
+
+        <dt>qualified electronic archiving service 
+        <dd>means a service that meets the requirements laid down in Article 45g;
+
+        <dt>EU Digital Identity Wallet Trust Mark 
+        <dd>means an indication in a simple, recognisable and clear manner that a Digital Identity Wallet has been issued in accordance with this Regulation;
+
+        <dt>strong user authentication 
+        <dd>means an authentication based on the use of at least two authentication factors categorised as user knowledge , possession and inherence that are independent, in such a way that the breach of one does not compromise the reliability of the others, and is designed in such a way to protect the confidentiality of the authentication data;
+
+        <dt>user account 
+        <dd>means a mechanism that allows a user to access public or private services on the terms and conditions established by the service provider;
+
+        <dt>personal data 
+        <dd>means any information as defined in point 1 of Article 4 of Regulation (EU) 2016/679;
+
+        <dt>identity matching 
+        <dd>means a process where person identification data or person identification means are matched with or linked to an existing account belonging to the same person;
+
+        <dt>offline service 
+        <dd>means the capability of a user to electronically identify and authenticate with a third party with close proximity technologies irrespective of whether the device is connected to the internet or not in order to access a wide range of public and private services;
+
+<section #references>
