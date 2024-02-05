@@ -336,6 +336,55 @@
         </ol>
     </section>
 </section>
+<section id='Infrastructure for obtaining the LEAR Credential'><h2>Infrastructure for obtaining the LEAR Credential</h2>
+
+    <p>This section describes the components and infrastructure required by an organisation to create the LEAR Credential for one of its employees.
+    </p>
+    <section id='LEAR Credential Issuer'><h2>LEAR Credential Issuer</h2>
+
+        <p>The <code>LEAR Credential Issuer</code> is the main application that manages the credential flow. We assume here that it is specialised in creating LEAR Credentials, though it could be used for other types of credentials. In this context, we will use the term <code>LEAR Credential Issuer</code> and <code>Credential Issuer</code> as interchangeable.
+        </p>
+        <p>For the explanation, we are going to assume the issuance flow described above and a given set of actors. However, the flows can be adapted to other scenarios.
+        </p>
+        <p>The main actors are:
+        </p>
+        <dl>
+            <dt id='Appointed employee'>Appointed employee
+            </dt>
+            <dd>This is the employee that will receive the LEAR Credential and that has been nominated or appointed by the organisation to perform some role in DOME on behalf of the organisation.
+            </dd>
+            <dt id='HR employee'>HR employee
+            </dt>
+            <dd>The employee from the Human Resources department of the organisation that introduces the Appointed employee data in the Credential Issuer application.
+            </dd>
+            <dt id='Legal Representative'>Legal Representative
+            </dt>
+            <dd>The natural person that is the official legal representative of the organisation.
+            </dd>
+        </dl>
+        <section id='Obtaining an eIDAS certificate'><h2>Obtaining an eIDAS certificate</h2>
+
+            <p>Before starting the process, the legal representative should have an eIDAS certificate. This is the same certificate that can be used to sign documents in PDF form. The legal representative will be signing the LEAR Credential in a similar way to signing a PDF in her machine, except she will use a special program provided by DOME instead of Acrobat Reader. The technical requirements for signing LEAR Credentials are essentially the same as for signing a PDF. More details about this later.
+            </p>
+        </section>
+        <section id='Introduction of data about the Appointed Employee'><h2>Introduction of data about the Appointed Employee</h2>
+
+            <p>The HR employee uses an HTML form provided by the LEAR Credential Issuer application to input the required data about the employee. The application enables also to provide such data with a YAML file, to facilitate automation of the process.
+            </p>
+            <p>The required data includes name, surname, contact data (phone and company email), and the roles that the employee is authorised to perform. For simplicity we assume here the role <code>onboarder</code>, but the HR employee can specify a list of roles relevant for DOME.
+            </p>
+            <p>Once the data is completed, the HR employee confirms the operation and the LEAR Credential Issuer notifies the Appointed Employee using the company email provided.
+            </p>
+        </section>
+        <section id='The Appointed employee receives the Credential Offer'><h2>The Appointed employee receives the Credential Offer</h2>
+
+            <p>The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique <code>transaction code</code> that the employee requires to start the process for receiving the LEAR Credential.
+            </p>
+            <p>The Appointed employee enters into the HTML portal provided by the LEAR Credential Issuer (the URL of the portal is well-known, but it is also described in the email).
+            </p>
+        </section>
+    </section>
+</section>
 <section id='glossary'><h2>Glossary</h2>
 
     <p>As far as possible and in order to enhance consistency with the regulation, we use in this document the following definitions, which is essentially a subset of the definitions in Article 3 of the document [[eIDAS2.Regulation]] and in the original [[[eIDAS.Regulation]]].

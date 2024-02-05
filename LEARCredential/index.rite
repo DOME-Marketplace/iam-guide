@@ -95,3 +95,42 @@
             - After confirmation by the legal representative, the Credential Signer sends the LEAR Credential back to the Credential Issuer, which notifies HR and the employee that the Credential is ready. The employee uses her Wallet to retrieve the LEAR Credential from the Credential Issuer, again using the OpenID4VCI protocol.
 
 
+<section>Infrastructure for obtaining the LEAR Credential
+
+    This section describes the components and infrastructure required by an organisation to create the LEAR Credential for one of its employees.
+
+    <section>LEAR Credential Issuer
+
+        The `LEAR Credential Issuer` is the main application that manages the credential flow. We assume here that it is specialised in creating LEAR Credentials, though it could be used for other types of credentials. In this context, we will use the term `LEAR Credential Issuer` and `Credential Issuer` as interchangeable.
+
+        For the explanation, we are going to assume the issuance flow described above and a given set of actors. However, the flows can be adapted to other scenarios.
+
+        The main actors are:
+
+        <dl>
+            <dt>Appointed employee
+            <dd>This is the employee that will receive the LEAR Credential and that has been nominated or appointed by the organisation to perform some role in DOME on behalf of the organisation.
+
+            <dt>HR employee
+            <dd>The employee from the Human Resources department of the organisation that introduces the Appointed employee data in the Credential Issuer application.
+
+            <dt>Legal Representative
+            <dd>The natural person that is the official legal representative of the organisation.
+
+        <section>Obtaining an eIDAS certificate
+
+            Before starting the process, the legal representative should have an eIDAS certificate. This is the same certificate that can be used to sign documents in PDF form. The legal representative will be signing the LEAR Credential in a similar way to signing a PDF in her machine, except she will use a special program provided by DOME instead of Acrobat Reader. The technical requirements for signing LEAR Credentials are essentially the same as for signing a PDF. More details about this later.
+
+        <section>Introduction of data about the Appointed Employee
+
+            The HR employee uses an HTML form provided by the LEAR Credential Issuer application to input the required data about the employee. The application enables also to provide such data with a YAML file, to facilitate automation of the process.
+
+            The required data includes name, surname, contact data (phone and company email), and the roles that the employee is authorised to perform. For simplicity we assume here the role `onboarder`, but the HR employee can specify a list of roles relevant for DOME.
+
+            Once the data is completed, the HR employee confirms the operation and the LEAR Credential Issuer notifies the Appointed Employee using the company email provided.
+
+        <section>The Appointed employee receives the Credential Offer
+
+            The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique `transaction code` that the employee requires to start the process for receiving the LEAR Credential.
+
+            The Appointed employee enters into the HTML portal provided by the LEAR Credential Issuer (the URL of the portal is well-known, but it is also described in the email).
