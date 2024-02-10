@@ -42,8 +42,8 @@
     href: "http://openid.net/specs/openid-connect-core-1_0.html"
     date: "8 November 2014"
 "OpenID.VCI":
-    title: "OpenID for Verifiable Credential Issuance"
-    date: "3 February 2023"
+    title: "OpenID for Verifiable Credential Issuance - draft 13"
+    date: "8 February 2024"
     href: "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html"
 "OpenID.SIOP2":
     title: "Self-Issued OpenID Provider v2"

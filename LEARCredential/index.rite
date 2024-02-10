@@ -224,3 +224,4 @@
             This is a simple program that is installed in the PC of the legal representative. It is intended for self-installation without requiring technical knowledge, though it is expected to be installed by the IT personnel taking care of the personal computer infrastructure of the employees in the organisation. The program can be installed using the typical automated installation processes in big organisations.
 
             The only configuration required is the URL of the LEAR Credential Issuer that the organisation wants to use for Credential issuance. It may be the URL of the instance operated by DOME, or any other instance that the organisation wants.
+
