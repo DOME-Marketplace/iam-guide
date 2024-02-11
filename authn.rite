@@ -1047,10 +1047,6 @@ localBiblioFile: "localbiblio.yaml"
                 issuer -> wallet--++: Credential Offer (Pre-Authorized Code)
                 # -(8. Get Credential Offer)
 
-                wallet <-> issuer: **(9)** Obtains Issuer's Credential Issuer metadata
-                # -(9. Wallet obtains Issuer's Credential Issuer metadata)
-                    
-                    The Wallet uses the Credential Issuer's URL to fetch its metadata, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
 
             <section>Credential Offer Parameters for the LEAR Credential issuance flow
 
@@ -1212,54 +1208,97 @@ localBiblioFile: "localbiblio.yaml"
                 wallet <-> issuer: **(9)** Obtains Issuer's Credential Issuer metadata
                 # -(9. Wallet obtains Issuer's Credential Issuer metadata)
                     
-                    The Wallet uses the Credential Issuer's URL to fetch its metadata, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
+                    The Wallet retrieves the Credential Issuer's configuration using the Credential Issuer Identifier, the `credential_issuer' field in the Credential Offer received before, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
 
-
-            The Wallet retrieves the Credential Issuer's configuration using the Credential Issuer Identifier, the `credential_issuer' field in the Credential Offer received before.
-
-            The LEAR Credential Issuer MUST make a JSON document available at the path formed by concatenating the string `/.well-known/openid-credential-issuer` to the Credential Issuer Identifier. If the Credential Issuer value contains a path component, any terminating / MUST be removed before appending `/.well-known/openid-credential-issuer`.
-
-            Communication with the Credential Issuer Metadata Endpoint MUST utilize TLS.
-
-            To fetch the Credential Issuer Metadata, the requester MUST send an HTTP request using the GET method and the path formed following the steps above. The Credential Issuer MUST return a JSON document compliant with this specification using the application/json media type and the HTTP Status Code 200.
-
-
-            The Wallet backend retrieves the Credential Issuer's configuration using the Credential Issuer Identifier that was received in the Credential Offer.
-
-            A Credential Issuer is identified in this context by a case sensitive URL using the https scheme that contains scheme, host and, optionally, port number and path components, but no query or fragment components. No DID is used in this context.
-
-            Credential Issuers MUST make a JSON document available at the path formed by concatenating the string `/.well-known/openid-credential-issuer` to the Credential Issuer Identifier. If the Credential Issuer value contains a path component, any terminating / MUST be removed before appending `/.well-known/openid-credential-issuer`.
-
-            `openid-credential-issuer` MUST point to a JSON document compliant with this specification and MUST be returned using the `application/json` content type.
-
-            The retrieval of the Credential Issuer configuration is illustrated below.
-
-            <figure #iss-issuermetadata_1>
-                <img src="images/issuance/issuance_issuermetadata.svg" alt="" />
-
-                <figcaption>Issuer metadata.
 
             <section>Credential Issuer Metadata Parameters
 
-                The object contained in `openid-credential-issuer` contains the following:
+                The LEAR Credential profile defines the following Credential Issuer Metadata parameters:
 
                 <ul>
                     - `credential_issuer`: REQUIRED. The Credential Issuer's identifier.
+                    
+                    - `authorization_servers`: NOT USED in the LEAR Credential Issuer.
+                    
+                    - `credential_endpoint`: REQUIRED. URL of the Credential Issuer's Credential Endpoint.
+                    
+                    - `batch_credential_endpoint`: NOT USED in the LEAR Credential Issuer.
+                    
+                    - `deferred_credential_endpoint`: NOT USED in the LEAR Credential Issuer. Even when the Credential is not immediately available, the Wallet will send all requests to the `credential_endpoint`.
+                    
+                    - `notification_endpoint`: NOT USED in the LEAR Credential Issuer.
+                    
+                    - `credential_response_encryption`: NOT USED in the LEAR Credential Issuer.
 
-                    - `credential_endpoint`: REQUIRED. URL of the Credential Issuer's Credential Endpoint. This URL MUST use the https scheme and MAY contain port, path and query parameter components.
+                    - `credential_identifiers_supported`: REQUIRED in the LEAR Credential profile. Boolean value specifying whether the Credential Issuer supports returning `credential_identifiers` parameter in the `authorization_details` Token Response parameter. In the LEAR Credential profile it must be `true` indicating support.
+                    
+                    - `signed_metadata`: NOT USED in the LEAR Credential Issuer.
+                    
+                    - `display`: REQUIRED in the LEAR Credential profile. Array of objects, where each object contains display properties of a Credential Issuer for a certain language. Below is a list with the minimum set of parameters that MUST be included:
 
-                    - `credentials_supported`: REQUIRED. A JSON array containing a list of JSON objects, each of them representing metadata about a separate credential type that the Credential Issuer can issue. The JSON objects in the array MUST conform to the structure of the Section XXXX.
+                        <ul>                  
+                            - `name`: REQUIRED in the LEAR Credential profile. String value of a display name for the Credential Issuer.
+                            
+                            - `locale`: REQUIRED in the LEAR Credential profile. String value that identifies the language of this object represented as a language tag taken from values defined in BCP47 [@!RFC5646]. There MUST be only one object for each language identifier.
+                            
+                            - `logo`: REQUIRED in the LEAR Credential profile. Object with information about the logo of the Credential Issuer. Below is a non-exhaustive list of parameters that MAY be included:
+                            
+                                <ul>
+                                    - `uri`: REQUIRED in the LEAR Credential profile. String value that contains a URI where the Wallet can obtain the logo of the Credential Issuer. The Wallet needs to determine the scheme, since the URI value could use the `https:` scheme, the `data:` scheme, etc.
+                                    - `alt_text`: REQUIRED in the LEAR Credential profile. String value of the alternative text for the logo image.
 
-                TODO: define a global directory of credentials supported to eliminate requirement for each individual Issuer to publish its own list.
 
-                This profile does not make use of the following parameters:
+                    - `credential_configurations_supported`: REQUIRED. Object that describes specifics of the Credential that the Credential Issuer supports issuance of. This object contains a list of name/value pairs, where each name is a unique identifier of the supported Credential being described. This identifier is used in the Credential Offer to communicate to the Wallet which Credential is being offered. The LEAR Credential Issuer MUST support at least the LEAR Credential, that is, one of the names in `credential_configurations_supported` MUST be `LEARCredentialEmployee` and the value is an object that contains metadata about the that LEAR Credential and contains the following parameters defined by the LEAR Credential profile:
 
-                <ul>
-                    - `authorization_server` parameter, because it uses the `pre-authorized_code` Grant type.
+                        <ul>
+                            - `format`: REQUIRED. A JSON string identifying the format of the LEAR Credential, which MUST be `jwt_vc_json`. The object contains further elements defining this type and additional particular claims and information about how to display the Credential. See the Credential Format Profile for more details.
+                        
+                            - `scope`: The LEAR Credential profile does not use this field.
+                            
+                            - `cryptographic_binding_methods_supported`: REQUIRED by the LEAR Credential profile. Array of case sensitive strings that identify the representation of the cryptographic key material that the issued Credential is bound to. The LEAR Credential profile uses the `did:key` for the Cryptographic Binding Method, so the value for `cryptographic_binding_methods_supported` is an array with a single value, which MUST be `did:key`.
+                            
+                            - `credential_signing_alg_values_supported`: REQUIRED by the LEAR Credential profile. The value MUST be an array with at least the value `ES256`. Other additional values may be supported.
+                            
+                            - `proof_types_supported`: REQUIRED by the LEAR Credential profile. Object that describes specifics of the key proof(s) that the Credential Issuer supports. This object contains a list of name/value pairs, where each name is a unique identifier of the supported proof type(s). One of the names in the list of name/value pairs MUST be `jwt`, and its value is the object `proof_signing_alg_values_supported` specified below:
+                            
+                                <ul>
+                                    - `proof_signing_alg_values_supported`: REQUIRED. Array of case sensitive strings that identify the algorithms that the Issuer supports for this proof type. For the LEAR Credential profile the array MUST contain at least the `ES256` value.
+                            
+                            - `display`: REQUIRED by the LEAR Credential profile. Array of objects, where each object contains the display properties of the LEAR Credential for a certain language. Below is a non-exhaustive list of parameters that MAY be included.
 
-                    - `batch_credential_endpoint` parameter. It indicates that the Credential Issuer does not support the Batch Credential Endpoint.
+                                <ul>
+                                    - `name`: REQUIRED. String value of a display name for the Credential. For the LEAR Credential profile it MUST be `LEAR Credential for Employee`.
+                                
+                                    - `locale`: OPTIONAL. String value that identifies the language of this object represented as a language tag taken from values defined in BCP47 [@!RFC5646]. Multiple `display` objects MAY be included for separate languages. There MUST be only one object for each language identifier.
+                                
+                                    - `logo`: REQUIRED by the LEAR Credential profile. Object with information about the logo of the Credential. The following non-exhaustive set of parameters MAY be included:
+                                    
+                                        <ul>
+                                            - `uri`: REQUIRED. String value that contains a URI where the Wallet can obtain the logo of the LEAR Credential from the Credential Issuer. The Wallet needs to determine the scheme, since the URI value could use the `https:` scheme, the `data:` scheme, etc.
+                                    
+                                            - `alt_text`: OPTIONAL. String value of the alternative text for the logo image.
+                                
+                                    - `description`: OPTIONAL. String value of a description of the Credential.
+                                
+                                    - `background_color`: OPTIONAL. String value of a background color of the Credential represented as numerical color values defined in CSS Color Module Level 37 [@!CSS-Color].
+                                
+                                    - `background_image`: OPTIONAL. Object with information about the background image of the Credential. At least the following parameter MUST be included:
+                                
+                                        <ul>
+                                            - `uri`: REQUIRED. String value that contains a URI where the Wallet can obtain the background image of the Credential from the Credential Issuer. The Wallet needs to determine the scheme, since the URI value could use the `https:` scheme, the `data:` scheme, etc.
+                                
+                                    - `text_color`: OPTIONAL. String value of a text color of the Credential represented as numerical color values defined in CSS Color Module Level 37 [@!CSS-Color].
 
-                    - `display` parameter.
+                            - `credential_definition`: REQUIRED by the LEAR Credential profile. Object containing the detailed description of the Credential type. It consists of at least the following two parameters:
+
+                                <ul>
+                                    - `type`: REQUIRED. For the LEAR Credential profile it is an array with the following value: `["VerifiableCredential", "LEARCredentialEmployee"]`.
+
+                                    - `credentialSubject`: MUST NOT be used for the LEAR Credential profile. The LEAR Credential is a well-know type of Credential in the DOME ecosystem and its properties are common across all participants, and possible inconsistencies between the "official" definition and the one used by a LEAR Credential Issuer have to be avoided.
+                                    
+                                    - `order`: MUST NOT be used for the LEAR Credential profile. To make the use of the LEAR Credential safer for End-Users, all Wallets MUST use the "official" definition of the LEAR Credential, which includes the `order` field.
+
+                As allowed by <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2.3">Section 11.2.3</a> of [[OpenID.VCI]], for the LEAR Credential profile the `response_types_supported` parameter MUST NOT appear in the metadata of the LEAR Credential Issuer despite [RFC8414] mandating it, because the LEAR Credential Issuer only supports the Pre-Authorized Code grant type.
 
 
         <section>OAuth 2.0 Authorization Server Metadata
