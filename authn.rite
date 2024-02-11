@@ -285,8 +285,8 @@ localBiblioFile: "localbiblio.yaml"
 
                 }
 
-                package "Legal entity" {
-                    actor "Representative of\nlegal entity" as lr
+                package "Legal person" {
+                    actor "Representative of\nlegal person" as lr
                     qtsp --> lr : Issues\ncertificate\nof representation
 
                     actor "Authorisation\nManager" as autm
@@ -838,38 +838,219 @@ localBiblioFile: "localbiblio.yaml"
 
             We assume that the Issuer and End User have a previous relationship and that the Issuer has performed the KYC required by regulation and needed to be able to issue Verifiable Credentials attesting some attributes about the End User. We assume that there is an existing trusted authentication mechanism (not necessarily related to Verifiable Credentials) that the End User employs to access protected resources from the Issuer. For example, the user is an employee or a customer of the Issuer, or the Issuer is a Local Administration and the End User is a citizen living in that city.
 
+        <section>The Human Resources employee introduces employee data into Issuer
 
-        <section>Authentication
+            <x-diagram .plantuml>Creating a Credential Offer
+                !include <tupadr3/common>
+                !include <office/Servers/database_server>
+                !include <office/Servers/application_server>
+                !include <office/Concepts/firewall_orange>
+                !include <office/Clouds/cloud_disaster_red>
+                !include <office/Devices/cell_phone_generic>
+                !include <office/Devices/device_laptop>
+                !include <office/Security/trusted_application_server>
+                !include <office/Users/user>
+
+                box "Employee" #WhiteSmoke
+                    actor "Employee" as user
+                    participant "<$cell_phone_generic>\nPhone" as wallet
+                end box
+
+                box "LEAR Credential Issuer" #WhiteSmoke
+                    participant "<$trusted_application_server>\nIssuer" as issuer
+                end box
+
+                actor "HR employee" as hr
+                actor "Legal Representative" as representative
+
+                hr -> issuer++: **(1)** Enter info about Employee
+                # -(1. Enter information about the Employee)
+
+                    The HR employee uses an HTML form provided by the LEAR Credential Issuer application to input the required data about the employee. The application enables also to provide such data with a YAML file, to facilitate automation of the process.
+
+                    The required data includes name, surname, contact data (phone and company email), and the roles that the employee is authorised to perform. For simplicity we assume here the role `onboarder`, but the HR employee can specify a list of roles relevant for DOME.
+
+                    Once the data is completed, the HR employee confirms the operation and the LEAR Credential Issuer notifies the Appointed Employee using the company email provided.
+
+                issuer -> issuer: Generate Credential Offer
+                issuer -> user--: **(2)** Notify user
+                # -(2. Notify End-User)
+                    The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique `transaction code` that the employee requires to start the process for receiving the LEAR Credential.
+
+        <section>Employee accesses Issuer portal
+
+            <x-diagram .plantuml>Employee scans the Credential Offer
+                !include <tupadr3/common>
+                !include <office/Servers/database_server>
+                !include <office/Servers/application_server>
+                !include <office/Concepts/firewall_orange>
+                !include <office/Clouds/cloud_disaster_red>
+                !include <office/Devices/cell_phone_generic>
+                !include <office/Devices/device_laptop>
+                !include <office/Security/trusted_application_server>
+                !include <office/Users/user>
+
+                box "Employee" #WhiteSmoke
+                    actor "Employee" as user
+                    participant "<$cell_phone_generic>\nPhone" as wallet
+                    participant "Laptop" as laptop
+                end box
+
+                box "LEAR Credential Issuer" #WhiteSmoke
+                    participant "<$trusted_application_server>\nIssuer" as issuer
+                end box
+
+                actor "HR employee" as hr
+                actor "Legal Representative" as representative
+
+                hr -> issuer++: **(1)** Enter info about Employee
+                # -(1. Enter information about the Employee)
+
+                    The HR employee uses an HTML form provided by the LEAR Credential Issuer application to input the required data about the employee. The application enables also to provide such data with a YAML file, to facilitate automation of the process.
+
+                    The required data includes name, surname, contact data (phone and company email), and the roles that the employee is authorised to perform. For simplicity we assume here the role `onboarder`, but the HR employee can specify a list of roles relevant for DOME.
+
+                    Once the data is completed, the HR employee confirms the operation and the LEAR Credential Issuer notifies the Appointed Employee using the company email provided.
+
+                issuer -> issuer: Generate Credential Offer
+                issuer -> user--: **(2)** Notify user
+                # -(2. Notify End-User)
+                    The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique `transaction code` that the employee requires to start the process for receiving the LEAR Credential.
+                |||
+                user --> laptop++:  **(3)** Access Issuer portal
+                laptop -> issuer--++:
+                # -(3. Access Issuer portal)
+                    The employee enters into the HTML portal provided by the LEAR Credential Issuer (the URL of the portal is well-known, but it is also described in the email)
+
+                issuer -> laptop--++: **(4)** HTTP 302 (redirect) to login page
+                laptop -> issuer--++
+
+                # -(4. Login with transaction code)
+                    The portal redirects the user to the login page of the Verifier component of DOME Onboarding.
+
+                    The portal does not require the employee to be pre-registered in the application, because the unique `transaction code` received via email is used to login and access its Credential Offer.
+
+                issuer -> issuer: **(5)** Generate QR code
+                # -(5. Generate QR code)
+                    The Verifier generates a QR code, containing inside the URL of the `/authentication-requests` endpoint of the Verifier component which will be used to start the [[OpenID.VP]] process.
+
+                    A QR code is used because a Self-Issued OP may be running locally as a native application or progressive web application (PWA), the RP may not have a network-addressable endpoint to communicate directly with the OP. We have to leverage the implicit flow of OpenID Connect to communicate with such locally-running Ops, as described in [[OpenID.SIOP2]].
+
+                    <x-code .ini>
+                        https://verifier.dome-marketplace.eu/authorization-requests?state=af0ifjsldkj
+
+                issuer --> laptop --: **(6)** Display QR code
+                # -(6) The QR code is displayed in the user browser with instructions to scan it and go to the URL inside it.
+
+                    <figure>
+                        <img src="images/qrcode-authreq.png" alt="" />
+
+                        <figcaption>QR code with URL to Credential Offer
+
+
+
 
             <figure #iss-authentication_1>
                 <img src="images/issuance/issuance_authentication.svg" alt="" />
 
                 <figcaption>Issuance authentication.
 
+            <x-note>Authentication
 
-            Before requesting a new credential, the End User has to authenticate with the Issuer with whatever mechanism is already implemented by the Issuer. This profile does not require that it is based on OIDC, Verifiable Credentials or any other specific mechanism.
+                Companies may want to add additional authentication mechanisms if they want to increase security. For example, the End User may authenticate with an existing intra-company authentication (only if the LEAR Credential Issuer is deployed by the company, and not accessed as SaaS). This profile does not require that it is based on OIDC, Verifiable Credentials or any other specific mechanism.
 
-            The level of assurance (LoA) of this authentication mechanism is one of the factors that will determine the confidence that the Verifiers can have on the credentials received by them from a given Issuer.
-
-            <x-note>LEARCredential
-                In the case of the LEARCredential, the End User (John Doe) is an employee of GoodAir and in order to receive the credential John first has to authenticate into the company systems using whatever mechanism GoodAir uses for employee authentication.
-                
-                Being a modern company, GoodAir uses Verifiable Credentials IAM but this is not a requirement for the issuance of the LEARCredential.
-
+                The level of assurance (LoA) of this authentication mechanism is one of the factors that will determine the confidence that the Verifiers can have on the credentials received by them from a given Issuer.
 
         <section>Credential Offer
 
-            <figure #iss-credentialoffer_1>
-                <img src="images/issuance/issuance_credentialoffer.svg" alt="" />
+            <x-diagram .plantuml>Credential Offer
+                !include <tupadr3/common>
+                !include <office/Servers/database_server>
+                !include <office/Servers/application_server>
+                !include <office/Concepts/firewall_orange>
+                !include <office/Clouds/cloud_disaster_red>
+                !include <office/Devices/cell_phone_generic>
+                !include <office/Devices/device_laptop>
+                !include <office/Security/trusted_application_server>
+                !include <office/Users/user>
 
-                <figcaption>Credential offer.
+                box "Employee" #WhiteSmoke
+                    actor "Employee" as user
+                    participant "<$cell_phone_generic>\nPhone" as wallet
+                    participant "Laptop" as laptop
+                end box
 
-            In this profile the wallet does not have to implement the Credential Offer Endpoint described in section 4 of [[OpenID.VCI]].
+                box "LEAR Credential Issuer" #WhiteSmoke
+                    participant "<$trusted_application_server>\nIssuer" as issuer
+                end box
 
-            Instead, the Credential Issuer renders a QR code containing a reference to the Credential Offer that can be scanned by the End-User using a Wallet, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-4.1">section 4.1</a> of [[OpenID.VCI]].
+                actor "HR employee" as hr
+                actor "Legal Representative" as representative
 
-            According to the spec, the Credential Offer object is a JSON object containing the Credential Offer parameters and can be sent by value or by reference. To avoid problems with the size of the QR travelling in the URL, this profile requires that the QR contains the `credential_offer_uri`, which is a URL using the `https` scheme referencing a resource containing a JSON object with the Credential Offer parameters. The `credential_offer_uri` endpoint should be implemented by the Issuer backend.
+                hr -> issuer++: **(1)** Enter info about Employee
+                # -(1. Enter information about the Employee)
 
+                    The HR employee uses an HTML form provided by the LEAR Credential Issuer application to input the required data about the employee. The application enables also to provide such data with a YAML file, to facilitate automation of the process.
+
+                    The required data includes name, surname, contact data (phone and company email), and the roles that the employee is authorised to perform. For simplicity we assume here the role `onboarder`, but the HR employee can specify a list of roles relevant for DOME.
+
+                    Once the data is completed, the HR employee confirms the operation and the LEAR Credential Issuer notifies the Appointed Employee using the company email provided.
+
+                issuer -> issuer: Generate Credential Offer
+                issuer -> user--: **(2)** Notify user
+                # -(2. Notify End-User)
+                    The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique `transaction code` that the employee requires to start the process for receiving the LEAR Credential.
+                |||
+                user --> laptop++:  **(3)** Access Issuer portal
+                laptop -> issuer--++:
+                # -(3. Access Issuer portal)
+                    The employee enters into the HTML portal provided by the LEAR Credential Issuer (the URL of the portal is well-known, but it is also described in the email)
+
+                issuer -> laptop--++: **(4)** HTTP 302 (redirect) to login page
+                laptop -> issuer--++
+
+                # -(4. Login with transaction code)
+                    The portal redirects the user to the login page of the Verifier component of DOME Onboarding.
+
+                    The portal does not require the employee to be pre-registered in the application, because the unique `transaction code` received via email is used to login and access its Credential Offer.
+
+                issuer -> issuer: **(5)** Generate QR code
+                # -(5. Generate QR code)
+                    The Verifier generates a QR code, containing inside the URL of the `/authentication-requests` endpoint of the Verifier component which will be used to start the [[OpenID.VP]] process.
+
+                    A QR code is used because a Self-Issued OP may be running locally as a native application or progressive web application (PWA), the RP may not have a network-addressable endpoint to communicate directly with the OP. We have to leverage the implicit flow of OpenID Connect to communicate with such locally-running Ops, as described in [[OpenID.SIOP2]].
+
+                    <x-code .ini>
+                        https://verifier.dome-marketplace.eu/authorization-requests?state=af0ifjsldkj
+
+                issuer --> laptop --: **(6)** Display QR code
+                # -(6. Display QR code)
+                    The QR code is displayed in the user browser with instructions to scan it and go to the URL inside it.
+
+                    <figure>
+                        <img src="images/qrcode-authreq.png" alt="" />
+
+                        <figcaption>QR code with URL to Credential Offer
+
+                user -> wallet ++: **(7)** Start QR scan
+                laptop --> wallet: Scan QR
+                # -(7. Scan QR code)
+                    The user scans the QR with her wallet and tells the wallet to go to the URL in the QR.
+
+                    In this profile the wallet does not have to implement the Credential Offer Endpoint described in section 4 of [[OpenID.VCI]].
+
+                    Instead, the Credential Issuer renders a QR code containing a reference to the Credential Offer that can be scanned by the End-User using a Wallet, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-4.1">section 4.1</a> of [[OpenID.VCI]].
+
+                    According to the spec, the Credential Offer object is a JSON object containing the Credential Offer parameters and can be sent by value or by reference. To avoid problems with the size of the QR travelling in the URL, this profile requires that the QR contains the `credential_offer_uri`, which is a URL using the `https` scheme referencing a resource containing a JSON object with the Credential Offer parameters. The `credential_offer_uri` endpoint should be implemented by the Issuer backend.
+
+                wallet -> issuer--++: **(8)** Get Credential Offer
+                issuer -> wallet--++: Credential Offer (Pre-Authorized Code)
+                # -(8. Get Credential Offer)
+
+                wallet <-> issuer: **(9)** Obtains Issuer's Credential Issuer metadata
+                # -(9. Wallet obtains Issuer's Credential Issuer metadata)
+                    
+                    The Wallet uses the Credential Issuer's URL to fetch its metadata, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
 
             <section>Credential Offer Parameters
 
