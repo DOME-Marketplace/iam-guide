@@ -1052,59 +1052,73 @@ localBiblioFile: "localbiblio.yaml"
                     
                     The Wallet uses the Credential Issuer's URL to fetch its metadata, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
 
-            <section>Credential Offer Parameters
+            <section>Credential Offer Parameters for the LEAR Credential issuance flow
 
-                This profile restricts the options available in section 4.1.1 of [[OpenID.VCI]]. The profile defines a Credential Offer object containing the following parameters:
+                The LEAR Credential profile restricts the options available in <a href="https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#section-4.1.1">section 4.1.1</a> of [[OpenID.VCI]]. The profile defines a Credential Offer object containing the following parameters:
 
                 <ul>
-                    - `credential_issuer`: REQUIRED. The URL of the Credential Issuer that will be used by the Wallet to obtain one or more Credentials.
 
-                    - `credentials`: REQUIRED. A JSON array, where every entry is a JSON string. To achieve interoperability faster, this profile defines a global Trusted Credential Schemas List where well-known credential schemas are defined, in addition to the individual credentials that each Issuer can define themselves. The string value MUST be one of the id values in one of the objects in the `credentials_supported` metadata parameter of the Trusted Credential Schemas List (described later), or one of the id values in one of the objects in the `credentials_supported` Credential Issuer metadata parameter provided by the Credential Issuer. When processing, the Wallet MUST resolve this string value to the respective object. The credentials defined in the global Trusted Credential Schema List have precedence over the ones defined by the Credential Issuer.
+                    - `credential_issuer`: REQUIRED. The URL of the Credential Issuer, as defined in <a href="https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#section-11.2.1">Section 11.2.1</a> of [[OpenID.VCI]], from which the Wallet is requested to obtain one or more Credentials. The Wallet uses it to obtain the Credential Issuer's Metadata following the steps defined in <a href="https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#section-11.2.2">Section 11.2.2</a>.
+
+                    - `credential_configuration_ids`: REQUIRED. Array of unique strings that each identify one of the keys in the name/value pairs stored in the `credential_configurations_supported` Credential Issuer metadata. The Wallet uses these string values to obtain the respective object that contains information about the Credential being offered as defined in <a href="https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#section-11.2.3">Section 11.2.3</a> of [[OpenID.VCI]].
 
                         <x-note>LEARCredential
-                            The only credential being offered in our case is the LEARCredential, so this is the credential schema that should be specified here. The LEARCredential is a credential known globally to the DOME ecosystem, so its schema should be published and be available in the Trusted Credential Schemas List.
+                            For the LEAR Credential Issuer, the `credential_configuration_ids` array MUST contain at least the identifier of the LEAR Credential for employees, which is `"LEARCredentialEmployee"`. The LEARCredential is a credential known globally to the DOME ecosystem, so its schema should be published and be available in the Trusted Credential Schemas List of DOME.
 
-                    - `grants`: REQUIRED. A JSON object indicating to the Wallet the Grant Type `pre-authorized_code`. This grant is represented by a key and an object, where the key is `urn:ietf:params:oauth:grant-type:pre-authorized_code`. In this profile the credential issuance flow requires initial authentication of the End User by the Credential Issuer, so the Pre-Authorized Code Flow achieves a good level of security and we do not need the more general Authorization Code Flow.
+                    - `grants`: REQUIRED in the LEAR Credential profile. Object indicating to the Wallet the Grant Types the Credential Issuer's Authorization Server is prepared to process for this Credential Offer. Every grant is represented by a name/value pair. The name is the Grant Type identifier; the value is an object that contains parameters either determining the way the Wallet MUST use the particular grant and/or parameters the Wallet MUST send with the respective request(s). If grants is not present or is empty, the Wallet MUST determine the Grant Types the Credential Issuer's Authorization Server supports using the respective metadata. When multiple grants are present, it is at the Wallet's discretion which one to use.
 
-                        In other scenarios like when the wallet is a native mobile application and the user interacts with the Issuer exclusively with the mobile (without the laptop), then the Authorization Code Flow has to be used. This can be described in detail in a different profile.
-
-                The grant object contains the following values:
+                The LEAR Credential profile requires `grants` to have the Grant Type `urn:ietf:params:oauth:grant-type:pre-authorized_code`:
 
                 <ul>
-                    - `pre-authorized_code`: REQUIRED. The code representing the Credential Issuer's authorization for the Wallet to obtain Credentials of a certain type. This code MUST be short lived and single-use. This parameter value MUST be included in the subsequent Token Request with the Pre-Authorized Code Flow.
 
-                    - `user_pin_required`: REQUIRED. The [[OpenID.VCI]] standard says it is RECOMMENDED, but this profile specifies the user pin to achieve a greater level of security. This field is a boolean value specifying whether the Credential Issuer expects presentation of a user PIN along with the Token Request in a Pre-Authorized Code Flow. Default is false. This PIN is intended to bind the Pre-Authorized Code to a certain transaction in order to prevent replay of this code by an attacker that, for example, scanned the QR code while standing behind the legit user. It is RECOMMENDED to send a PIN via a separate channel. The PIN value MUST be sent in the `user_pin` parameter with the respective Token Request.
+                    - `pre-authorized_code`: REQUIRED. The code representing the Credential Issuer's authorization for the Wallet to obtain Credentials of a certain type. This code MUST be short lived and single use. The LEAR Credential issuance uses the Pre-Authorized Code Flow, so this parameter value MUST be included in the subsequent Token Request.
 
-                The following non-normative example shows a Credential Offer object where the Credential Issuer offers the issuance of one Credential ("LEARCredential"):
+                    - `tx_code`: REQUIRED in the LEAR Credential profile. Object specifying whether the Authorization Server expects presentation of a Transaction Code by the End-User along with the Token Request in a Pre-Authorized Code Flow. The Transaction Code is intended to bind the Pre-Authorized Code to a certain transaction to prevent replay of this code by an attacker that, for example, scanned the QR code while standing behind the legitimate End-User. The Transaction Code MUST be sent via a separate channel (eg. using the employee email if it is considered sufficiently secure, or communicating it via whatever secure mechanisms the company has for employee communications). The Transaction Code value MUST be sent in the `tx_code` parameter with the respective Token Request as defined in <a href="https://openid.github.io/OpenID4VCI/openid-4-verifiable-credential-issuance-wg-draft.html#section-6.1">Section 6.1</a> of [[OpenID.VCI]].
+
+                    <ul>
+                        - `input_mode` : REQUIRED in the LEAR Credential profile. String specifying the input character set. Possible values are numeric (only digits) and text (any characters). The default is numeric.
+
+                        - `length`: REQUIRED in the LEAR Credential profile. Integer specifying the length of the Transaction Code. This helps the Wallet to render the input screen and improve the user experience.
+
+                        - `description`: REQUIRED in the LEAR Credential profile. String containing guidance for the Holder of the Wallet on how to obtain the Transaction Code, e.g., describing over which communication channel it is delivered. The Wallet MUST display this description next to the Transaction Code input screen to improve the user experience. The length of the string MUST NOT exceed 300 characters. The description does not support internationalization, however the Issuer MAY detect the Holder's language by previous communication or an HTTP Accept-Language header within an HTTP GET request for a Credential Offer URI.
+
+                        - `interval`: OPTIONAL. The minimum amount of time in seconds that the Wallet SHOULD wait between polling requests to the token endpoint (in case the Authorization Server responds with error code authorization_pending - see Section 6.3). If no value is provided, Wallets MUST use 5 as the default.
+
+                        - `authorization_server`: OPTIONAL string that the Wallet can use to identify the Authorization Server to use with this grant type when authorization_servers parameter in the Credential Issuer metadata has multiple entries. It MUST NOT be used otherwise. The value of this parameter MUST match with one of the values in the authorization_servers array obtained from the Credential Issuer metadata.
+
+                The following non-normative example shows a Credential Offer object where the Credential Issuer offers the issuance of one Credential ("LEARCredentialEmployee") by the imaginary company GoodAir:
 
                 <x-code .json>
                     {
-                        "credential_issuer": "https://www.goodair.com",
-                        "credentials": [
-                            "LEARCredential"
+                        "credential_issuer": "https://credential-issuer.goodair.com",
+                        "credential_configuration_ids": [
+                            "LEARCredentialEmployee"
                         ],
                         "grants": {
                             "urn:ietf:params:oauth:grant-type:pre-authorized_code": {
-                                "pre-authorized_code": "asju68jgtyk9ikkew",
-                                "user_pin_required": true
+                                "pre-authorized_code": "oaKazRN8I0IbtZ0C7JuMn5",
+                                "tx_code": {
+                                    "length": 6,
+                                    "input_mode": "numeric",
+                                    "description": "Please provide the one-time code that was sent via corporate e-mail"
+                                }
                             }
                         }
                     }
-
 
             <section>Contents of the QR code
 
                 Below is a non-normative example of the Credential Offer displayed by the Credential Issuer as a QR code when the Credential Offer is passed by reference, as required in this profile:
 
                 <x-code .INI>
-                    https://www.goodair.com/credential-offer?
-                    credential_offer_uri=https%3A%2F%2Fserver%2Eexample%2Ecom%2Fcredential-offer%2F5j349k3e3n23j
+                    https://credential-issuer.goodair.com/credential-offer?
+                    credential_offer_uri=https%3A%2F%2Fcredential-issuer%2Egoodair%2Ecom%2Fcredential-offer%2F5j349k3e3n23j
 
                 Which in plain text would be:
 
                 <x-code .INI>
-                    https://www.goodair.com/credential-offer?
-                    credential_offer_uri=https://www.goodair.com/credential-offer/5j349k3e3n23j
+                    https://credential-issuer.goodair.com/credential-offer?
+                    credential_offer_uri=https://credential-issuer.goodair.com/credential-offer/5j349k3e3n23j
 
 
                 To increase security, the Issuer MUST make sure that every Credential Offer URI is unique for all credential offers created. This is the purpose of the nonce (`5j349k3e3n23j`) at the end of the url in the example. Issuers can implement whatever mechanism they wish, as far as it is transparent to the wallet.
