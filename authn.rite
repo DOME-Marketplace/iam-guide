@@ -1125,6 +1125,105 @@ localBiblioFile: "localbiblio.yaml"
 
         <section>Credential Issuer Metadata
 
+            <x-diagram .plantuml>Credential Offer
+                !include <tupadr3/common>
+                !include <office/Servers/database_server>
+                !include <office/Servers/application_server>
+                !include <office/Concepts/firewall_orange>
+                !include <office/Clouds/cloud_disaster_red>
+                !include <office/Devices/cell_phone_generic>
+                !include <office/Devices/device_laptop>
+                !include <office/Security/trusted_application_server>
+                !include <office/Users/user>
+
+                box "Employee" #WhiteSmoke
+                    actor "Employee" as user
+                    participant "<$cell_phone_generic>\nPhone" as wallet
+                    participant "Laptop" as laptop
+                end box
+
+                box "LEAR Credential Issuer" #WhiteSmoke
+                    participant "<$trusted_application_server>\nIssuer" as issuer
+                end box
+
+                actor "HR employee" as hr
+                actor "Legal Representative" as representative
+
+                hr -> issuer++: **(1)** Enter info about Employee
+                # -(1. Enter information about the Employee)
+
+                    The HR employee uses an HTML form provided by the LEAR Credential Issuer application to input the required data about the employee. The application enables also to provide such data with a YAML file, to facilitate automation of the process.
+
+                    The required data includes name, surname, contact data (phone and company email), and the roles that the employee is authorised to perform. For simplicity we assume here the role `onboarder`, but the HR employee can specify a list of roles relevant for DOME.
+
+                    Once the data is completed, the HR employee confirms the operation and the LEAR Credential Issuer notifies the Appointed Employee using the company email provided.
+
+                issuer -> issuer: Generate Credential Offer
+                issuer -> user--: **(2)** Notify user
+                # -(2. Notify End-User)
+                    The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique `transaction code` that the employee requires to start the process for receiving the LEAR Credential.
+                |||
+                user --> laptop++:  **(3)** Access Issuer portal
+                laptop -> issuer--++:
+                # -(3. Access Issuer portal)
+                    The employee enters into the HTML portal provided by the LEAR Credential Issuer (the URL of the portal is well-known, but it is also described in the email)
+
+                issuer -> laptop--++: **(4)** HTTP 302 (redirect) to login page
+                laptop -> issuer--++
+
+                # -(4. Login with transaction code)
+                    The portal redirects the user to the login page of the Verifier component of DOME Onboarding.
+
+                    The portal does not require the employee to be pre-registered in the application, because the unique `transaction code` received via email is used to login and access its Credential Offer.
+
+                issuer -> issuer: **(5)** Generate QR code
+                # -(5. Generate QR code)
+                    The Verifier generates a QR code, containing inside the URL of the `/authentication-requests` endpoint of the Verifier component which will be used to start the [[OpenID.VP]] process.
+
+                    A QR code is used because a Self-Issued OP may be running locally as a native application or progressive web application (PWA), the RP may not have a network-addressable endpoint to communicate directly with the OP. We have to leverage the implicit flow of OpenID Connect to communicate with such locally-running Ops, as described in [[OpenID.SIOP2]].
+
+                    <x-code .ini>
+                        https://verifier.dome-marketplace.eu/authorization-requests?state=af0ifjsldkj
+
+                issuer --> laptop --: **(6)** Display QR code
+                # -(6. Display QR code)
+                    The QR code is displayed in the user browser with instructions to scan it and go to the URL inside it.
+
+                    <figure>
+                        <img src="images/qrcode-authreq.png" alt="" />
+
+                        <figcaption>QR code with URL to Credential Offer
+
+                user -> wallet ++: **(7)** Start QR scan
+                laptop --> wallet: Scan QR
+                # -(7. Scan QR code)
+                    The user scans the QR with her wallet and tells the wallet to go to the URL in the QR.
+
+                    In this profile the wallet does not have to implement the Credential Offer Endpoint described in section 4 of [[OpenID.VCI]].
+
+                    Instead, the Credential Issuer renders a QR code containing a reference to the Credential Offer that can be scanned by the End-User using a Wallet, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-4.1">section 4.1</a> of [[OpenID.VCI]].
+
+                    According to the spec, the Credential Offer object is a JSON object containing the Credential Offer parameters and can be sent by value or by reference. To avoid problems with the size of the QR travelling in the URL, this profile requires that the QR contains the `credential_offer_uri`, which is a URL using the `https` scheme referencing a resource containing a JSON object with the Credential Offer parameters. The `credential_offer_uri` endpoint should be implemented by the Issuer backend.
+
+                wallet -> issuer--++: **(8)** Get Credential Offer
+                issuer -> wallet--++: Credential Offer (Pre-Authorized Code)
+                # -(8. Get Credential Offer)
+
+                wallet <-> issuer: **(9)** Obtains Issuer's Credential Issuer metadata
+                # -(9. Wallet obtains Issuer's Credential Issuer metadata)
+                    
+                    The Wallet uses the Credential Issuer's URL to fetch its metadata, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
+
+
+            The Wallet retrieves the Credential Issuer's configuration using the Credential Issuer Identifier, the `credential_issuer' field in the Credential Offer received before.
+
+            The LEAR Credential Issuer MUST make a JSON document available at the path formed by concatenating the string `/.well-known/openid-credential-issuer` to the Credential Issuer Identifier. If the Credential Issuer value contains a path component, any terminating / MUST be removed before appending `/.well-known/openid-credential-issuer`.
+
+            Communication with the Credential Issuer Metadata Endpoint MUST utilize TLS.
+
+            To fetch the Credential Issuer Metadata, the requester MUST send an HTTP request using the GET method and the path formed following the steps above. The Credential Issuer MUST return a JSON document compliant with this specification using the application/json media type and the HTTP Status Code 200.
+
+
             The Wallet backend retrieves the Credential Issuer's configuration using the Credential Issuer Identifier that was received in the Credential Offer.
 
             A Credential Issuer is identified in this context by a case sensitive URL using the https scheme that contains scheme, host and, optionally, port number and path components, but no query or fragment components. No DID is used in this context.
