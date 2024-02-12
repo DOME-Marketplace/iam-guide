@@ -670,6 +670,37 @@ localBiblioFile: "localbiblio.yaml"
 
             The description of the issuance process is general enough to be used for many types of credentials, but the text includes notes describing the concrete application of the process to the case of the LEARCredential.
 
+            The participants in the ecosystem in this example are:
+
+            <dl>
+
+                <dt>End-User
+                <dd>This is the employee (or contractor) of a company who will receive the LEAR Credential. The example assumes the existence of secure communication channels, offline or online, between the employee and at least the Human Resources department of the company (or whatever department is in charge of issuing the LEAR Credential to the employee).
+
+                <dt>Wallet
+                <dd>The wallet is assumed to be a Web application with a wallet backend, maybe implemented as a PWA so it has some offline capabilities and can be installed in the device, providing a user experience similar to a native application. Private key management and most sensitive operations are performed in a backend server, operated by an entity trusted by the end user. However, native applications and completely offline PWA mobile applications are also supported by this profile.
+
+                    This type of wallet supports natural persons, juridical persons and natural persons who are legal entity representatives of juridical persons. For juridical persons the wallet is usually called an `enterprise wallet` but we will use here just the term `wallet` unless the distinction is required.
+
+                    In this profile we assume that the wallet is not previously registered with the Issuer and that the wallet does not expose public endpoints that are called by the Issuer, even if the wallet has a backend server that could implement those endpoints. These assumptions make the wallet implementations in this profile to be very similar in interactions to a full mobile implementation, making migration to a full mobile implementation easier.
+
+                    In other words, from the point of view of the Issuer, the wallet in this profile is almost indistinguishable from a full mobile wallet, and it does not assume a previous relationship with the Wallet.
+
+                <dt>User Laptop
+                <dd>For clarity of exposition, we assume in this profile that the End User starts the interactions with the Issuer with an internet browser (user agent) in her laptop. However, there is nothing in the interactions which limits those interactions to a laptop form factor and the End User can interact with any internet browser in any device (mobile, tablet, kiosk).
+
+                <dt>Issuer
+                <dd>In this profile we assume that the Issuer is composed of two components:
+
+                    <ul>
+                        - <b>Issuer backend</b>: the main server implementing the business logic of the Issuer as a web application and additional backend APIs required for issuance of credentials.
+                        - <b>Authorization server</b>: the backend component implementing the existing authentication/authorization functionalities for the Issuer entity.
+
+                    The Issuer backend and the Authorization server could be implemented as a single component in an actual deployment, but we assume here that they are separated to make the profile more general, especially for big entities and also when using Trust Service Providers for cloud signature and credential issuance, for example.
+                    
+                    To simplify the explanation and the examples, we assume that there is only one instance of the Authorization Server for a given instance of the Issuer backend, which is also a common deployment scenario in many companies. We also assume that for external entities, like the Wallet, the two components are under the same domain so they look like one single server entity to the Wallet.
+
+
             <x-diagram .plantuml>Prueba
                 !include <tupadr3/common>
                 !include <office/Servers/database_server>
@@ -745,94 +776,7 @@ localBiblioFile: "localbiblio.yaml"
 
                 issuer -> wallet--: Credential Response (Credential(s))
 
-            <x-diagram .plantuml>Starting the authentication phase
-                box "Company" #WhiteSmoke
-                    actor "User" as user
-                    participant "Wallet" as mobile
-                    participant "Laptop" as browser
-                end box
-                box "Relying Party" #WhiteSmoke
-                    participant "Portal" as portal
-                    participant "VC Verifier" as verifier
-                end box
 
-                user -> browser ++: **(1)** Access DOM portal
-                # -(1) The User navigates with his Laptop browser to access the portal Of the  to perform the onboarding process.
-
-                    We assume in this scenario a cross-device interaction, that is, the user accesses the portal services with a PC browser, but authentication is performed with a mobile using Verifiable Credentials, as in typical 2-factor authentication.
-
-                browser -> portal --++: **(2)** Access DOM portal
-                # -(2) The browser sends a request to the Packet Delivery portal server.
-
-                portal -> browser --++: **(3)** HTTP 302 (redirect)
-                browser -> verifier --++: **(3 cont)** Access Login page
-                # -(3) The portal redirects the user to the login page of the Verifier component of DOME Onboarding. The page shows a button labelled “Login with Verifiable Credentials” or something similar.
-
-                verifier -> verifier: **(4)** Generate QR code
-                # -(4) The Verifier generates a QR code, containing inside the URL of the `/authentication-requests` endpoint of the Verifier component which will be used to start the [[OpenID.VP]] process.
-
-                    A QR code is used because a Self-Issued OP may be running locally as a native application or progressive web application (PWA), the RP may not have a network-addressable endpoint to communicate directly with the OP. We have to leverage the implicit flow of OpenID Connect to communicate with such locally-running Ops, as described in [[OpenID.SIOP2]].
-
-                    <x-code .ini>
-                        https://verifier.dome-marketplace.eu/authorization-requests?state=af0ifjsldkj
-
-                # -(5) The QR code is displayed in the user browser with instructions to scan it and go to the URL inside it.
-
-                    <figure #qr_code_authreq_2>
-                        <img src="images/qrcode-authreq.png" alt="" />
-
-                        <figcaption>QR code with the example Authorization Request endpoint inside
-
-                verifier -> browser --: **(5)** Display QR code
-
-                # -(6) The user scans the QR with his wallet and tells the wallet to go to the URL in the QR.
-                user -> mobile ++: **(6)** Start QR scan
-                browser --> mobile: Scan QR code
-
-                mobile -> verifier --++: **(7)** GET /authorization-requests
-                # -(7) After confirmation by the user, the wallet performs a `GET /authentication-requests` to the endpoint that was inside the QR code. The reply to the GET request is an Authorization Request
-
-
-                verifier -> verifier: **(8)** Create Authorization Request
-                # -(8) The VC Verifier creates a SIOP Authentication Request. The parameters comprising a request for verifiable presentations are described in detail in the next section
-
-                verifier -> mobile --: **(9)** Reply with Authorization Request
-                # -(9) The Verifier replies to the wallet with the Authorization Request
-
-
-
-            <figure #iss-overview_1>
-                <img src="images/issuance/issuance_background.svg" alt="" />
-
-                <figcaption>Overview of participants.
-
-            <b>End user</b>
-
-            This profile is valid for both natural and juridical persons, but because we are focusing on the issuance of the LEARCredential, in the detailed examples below we assume a natural person as the user.
-
-            <b>Wallet</b>
-
-            The wallet is assumed to be a Web application with a wallet backend, maybe implemented as a PWA so it has some offline capabilities and can be installed in the device, providing a user experience similar to a native application. Private key management and most sensitive operations are performed in a backend server, operated by an entity trusted by the end user. Other profiles can support native and completely offline PWA mobile applications, for end users.
-
-            This type of wallet supports natural persons, juridical persons and natural persons who are legal entity representatives of juridical persons. For juridical persons the wallet is usually called an `enterprise wallet` but we will use here just the term `wallet` unless the distinction is required.
-
-            In this profile we assume that the wallet is not previously registered with the Issuer and that the wallet does not expose public endpoints that are called by the Issuer, even if the wallet has a backend server that could implement those endpoints. That makes the wallet implementations in this profile to be very similar in interactions to a full mobile implementation, making migration to a full mobile implementation easier.
-
-            In other words, from the point of view of the Issuer, the wallet in this profile is almost indistinguishable from a full mobile wallet.
-
-            <b>User Laptop</b>
-
-            For clarity of exposition, we assume in this profile that the End User starts the interactions with the Issuer with an internet browser (user agent) in her laptop. However, there is nothing in the interactions which limits those interactions to a laptop form factor and the End User can interact with any internet browser in any device (mobile, tablet, kiosk).
-
-            <b>Issuer</b>
-
-            In this profile we assume that the Issuer is composed of two components:
-
-            <ul>
-                - <b>Authorization server</b>: the backend component implementing the existing authentication/authorization functionalities for the Issuer entity.
-                - <b>Issuer backend</b>: the main server implementing the business logic as a web application and additional backend APIs required for issuance of credentials.
-
-            The Issuer backend and the Authorization server could be implemented as a single component in an actual deployment, but we assume here that they are separated to make the profile more general, especially for big entities and also when using Trust Service Providers for cloud signature and credential issuance, for example.
 
             <b>Authentication of End User and previous Issuer-End User relationship</b>
 
