@@ -776,7 +776,7 @@ localBiblioFile: "localbiblio.yaml"
 
                 issuer -> wallet--: Credential Response (Credential(s))
 
-
+            
 
             <b>Authentication of End User and previous Issuer-End User relationship</b>
 
@@ -1250,53 +1250,176 @@ localBiblioFile: "localbiblio.yaml"
             This specification also defines a new OAuth 2.0 Authorization Server metadata [[RFC8414]] parameter to publish whether the AS that the Credential Issuer relies on for authorization, supports anonymous Token Requests with the Pre-authorized Grant Type. It is defined as follows:
 
             <ul>
-                - `pre-authorized_grant_anonymous_access_supported`: OPTIONAL. A JSON Boolean indicating whether the issuer accepts a Token Request with a Pre-Authorized Code but without a client id. The default is false.
+                - `pre-authorized_grant_anonymous_access_supported`: REQUIRED by the LEAR Credential profile. A JSON Boolean indicating whether the issuer accepts a Token Request with a Pre-Authorized Code but without a client id. It must be `true`.
 
 
-        <section>Access Token
+        <section>Request an Access Token
 
-            <figure #issuance_accesstoken_1>
-                <img src="images/issuance/issuance_accesstoken.svg" alt="" />
+            <x-diagram .plantuml>Request Access Token
+                !include <tupadr3/common>
+                !include <office/Servers/database_server>
+                !include <office/Servers/application_server>
+                !include <office/Concepts/firewall_orange>
+                !include <office/Clouds/cloud_disaster_red>
+                !include <office/Devices/cell_phone_generic>
+                !include <office/Devices/device_laptop>
+                !include <office/Security/trusted_application_server>
+                !include <office/Users/user>
 
-                <figcaption>Access Token.
+                box "Employee" #WhiteSmoke
+                    actor "Employee" as user
+                    participant "<$cell_phone_generic>\nPhone" as wallet
+                    participant "Laptop" as laptop
+                end box
 
-            The Wallet invokes the Token Endpoint implemented by the Authorization Server, which issues an Access Token and, optionally, a Refresh Token in exchange for the Pre-authorized Code that the wallet obtained in the Credential Offer.
+                box "LEAR Credential Issuer" #WhiteSmoke
+                    participant "<$trusted_application_server>\nIssuer" as issuer
+                end box
+
+                actor "HR employee" as hr
+                actor "Legal Representative" as representative
+
+                hr -> issuer++: **(1)** Enter info about Employee
+                # -(1. Enter information about the Employee)
+
+                    The HR employee uses an HTML form provided by the LEAR Credential Issuer application to input the required data about the employee. The application enables also to provide such data with a YAML file, to facilitate automation of the process.
+
+                    The required data includes name, surname, contact data (phone and company email), and the roles that the employee is authorised to perform. For simplicity we assume here the role `onboarder`, but the HR employee can specify a list of roles relevant for DOME.
+
+                    Once the data is completed, the HR employee confirms the operation and the LEAR Credential Issuer notifies the Appointed Employee using the company email provided.
+
+                issuer -> issuer: Generate Credential Offer
+                issuer -> user--: **(2)** Notify user
+                # -(2. Notify End-User)
+                    The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique `transaction code` that the employee requires to start the process for receiving the LEAR Credential.
+                |||
+                user --> laptop++:  **(3)** Access Issuer portal
+                laptop -> issuer--++:
+                # -(3. Access Issuer portal)
+                    The employee enters into the HTML portal provided by the LEAR Credential Issuer (the URL of the portal is well-known, but it is also described in the email)
+
+                issuer -> laptop--++: **(4)** HTTP 302 (redirect) to login page
+                laptop -> issuer--++
+
+                # -(4. Login with transaction code)
+                    The portal redirects the user to the login page of the Verifier component of DOME Onboarding.
+
+                    The portal does not require the employee to be pre-registered in the application, because the unique `transaction code` received via email is used to login and access its Credential Offer.
+
+                issuer -> issuer: **(5)** Generate QR code
+                # -(5. Generate QR code)
+                    The Verifier generates a QR code, containing inside the URL of the `/authentication-requests` endpoint of the Verifier component which will be used to start the [[OpenID.VP]] process.
+
+                    A QR code is used because a Self-Issued OP may be running locally as a native application or progressive web application (PWA), the RP may not have a network-addressable endpoint to communicate directly with the OP. We have to leverage the implicit flow of OpenID Connect to communicate with such locally-running Ops, as described in [[OpenID.SIOP2]].
+
+                    <x-code .ini>
+                        https://verifier.dome-marketplace.eu/authorization-requests?state=af0ifjsldkj
+
+                issuer --> laptop --: **(6)** Display QR code
+                # -(6. Display QR code)
+                    The QR code is displayed in the user browser with instructions to scan it and go to the URL inside it.
+
+                    <figure>
+                        <img src="images/qrcode-authreq.png" alt="" />
+
+                        <figcaption>QR code with URL to Credential Offer
+
+                user -> wallet ++: **(7)** Start QR scan
+                laptop --> wallet: Scan QR
+                # -(7. Scan QR code)
+                    The user scans the QR with her wallet and tells the wallet to go to the URL in the QR.
+
+                    In this profile the wallet does not have to implement the Credential Offer Endpoint described in section 4 of [[OpenID.VCI]].
+
+                    Instead, the Credential Issuer renders a QR code containing a reference to the Credential Offer that can be scanned by the End-User using a Wallet, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-4.1">section 4.1</a> of [[OpenID.VCI]].
+
+                    According to the spec, the Credential Offer object is a JSON object containing the Credential Offer parameters and can be sent by value or by reference. To avoid problems with the size of the QR travelling in the URL, this profile requires that the QR contains the `credential_offer_uri`, which is a URL using the `https` scheme referencing a resource containing a JSON object with the Credential Offer parameters. The `credential_offer_uri` endpoint should be implemented by the Issuer backend.
+
+                wallet -> issuer--++: **(8)** Get Credential Offer
+                issuer -> wallet--++: Credential Offer (Pre-Authorized Code)
+                # -(8. Get Credential Offer)
+
+                wallet <-> issuer: **(9)** Obtains Issuer's Credential Issuer metadata
+                # -(9. Wallet obtains Issuer's Credential Issuer metadata)
+                    
+                    The Wallet retrieves the Credential Issuer's configuration using the Credential Issuer Identifier, the `credential_issuer' field in the Credential Offer received before, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
+
+                wallet -> issuer++: **(10)** Token Request (Pre-Authorized Code, tx_code)
+                issuer -> wallet--++: Token Response (access_token)
+                # -(10. Token Request)
+
+                    The Wallet invokes the Token Endpoint implemented by the Authorization Server, which issues an Access Token and, optionally, a Refresh Token in exchange for the Pre-authorized Code that the wallet obtained in the Credential Offer.
+
 
             <section>Token Request
 
-                After the wallet receives the Credential Issuer Metadata, a Token Request is made as defined in Section 4.1.3 of [[RFC6749]].
+                The Token Request is made as defined in Section 4.1.3 of [[RFC6749]].
 
-                The following are the extension parameters to the Token Request used in a Pre-Authorized Code Flow as used in this profile:
+                The following are the extension parameters to the Token Request used by the LEAR Credential profile in the Pre-Authorized Code Flow:
 
                 <ul>
-                    - `pre-authorized_code`: REQUIRED. The code representing the authorization to obtain Credentials of a certain type.
 
-                    - `user_pin`: OPTIONAL. String value containing a user PIN. This value MUST be present if user_pin_required was set to true in the Credential Offer. The string value MUST consist of a maximum of 8 numeric characters (the numbers 0 - 9).
+                    - `pre-authorized_code`: REQUIRED in the LEAR Credential profile. The code representing the authorization to obtain the LEAR Credential.
 
-                In this profile the Wallet does not have to authenticate when using the Token Endpoint, because we are using the Pre-Authorized Code Grant Type, given the level of trust between the Issuer and the End User and that authentication was already performed at the beginning of the flow.
+                    - `tx_code`: REQUIRED in the LEAR Credential profile. String value containing a Transaction Code. This value MUST have the same value as the `tx_code` object present in the Credential Offer.
 
-                Below is a non-normative example of a Token Request:
+                For the LEAR Credential profile, authentication of the Client (which corresponds to the Wallet) is NOT USED, and, consequently, the `client_id` parameter is NOT USED.
+
+                The request parameter `authorization_details` MUST be used to convey the fact that the Wallet wants to obtain the LEAR Credential, by supplying the value of its `credential_configuration_id` specified in the Credential Offer. The authorization details type MUST be `openid_credential` and includes the following parameters to be used with this authorization details type:
+
+                <ul>
+
+                    - `type`: REQUIRED. String that determines the authorization details type. It MUST be set to `openid_credential` for the purpose of this specification.
+
+                    - `credential_configuration_id`: REQUIRED for the LEAR CRedential profile. String specifying a unique identifier of the LEAR Credential being described in the `credential_configurations_supported` map in the Credential Issuer Metadata. It MUST be `LEARCredentialEmployee`.
+                    
+                    - `format`: MUST NOT be used for the LEAR Credential profile.
+                    
+                The following is a non-normative example of an `authorization_details` object with a `credential_configuration_id`:
+
+                <x-code .JSON>
+                    [
+                        {
+                            "type": "openid_credential",
+                            "credential_configuration_id": "LEARCredentialEmployee"
+                        }
+                    ]
+
+                The Token Request MUST NOT contain a scope value related to Credential issuance.
+
+                Below is a non-normative example of a Token Request in a Pre-Authorized Code Flow for the LEAR Credential profile:
 
                 <x-code .HTTP>
                     POST /token HTTP/1.1
-                    Host: server.example.com
+                    Host: credential-issuer.goodair.com
                     Content-Type: application/x-www-form-urlencoded
 
-                    grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Apre-authorized_code
+                    grant_type=urn:ietf:params:oauth:grant-type:pre-authorized_code
                     &pre-authorized_code=SplxlOBeZQQYbYS6WxSbIA
-                    &user_pin=493536
+                    &authorization_details=%5B%7B%22type%22%3A%20%22openid_credential%22%2C%20%22
+                      credential_configuration_id%22%3A%20%22LEARCredentialEmployee%22%7D%5D
+                    &tx_code=493536
 
 
             <section>Successful Token Response
 
                 Token Responses are made as defined in [[RFC6749]].
 
-                In addition to the response parameters defined in [[RFC6749]], the Authorization Server returns the following parameters:
+                For the LEAR Credential profile, the LEAR Credential Issuer MUST NOT authorize issuance of multiple instances of the LEAR CRedential with the same Access Token.
+
+                In addition to the response parameters defined in [[RFC6749]], the LEAR Credential Issuer MUST return the following parameters:
 
                 <ul>
-                    - `c_nonce`: REQUIRED. JSON string containing a nonce to be used to create a proof of possession of key material when requesting a Credential. The Wallet MUST use this nonce value for its subsequent credential requests until the Credential Issuer provides a fresh nonce.
 
-                    - `c_nonce_expires_in`: REQUIRED. JSON integer denoting the lifetime in seconds of the c_nonce.
+                    - `c_nonce`: REQUIRED for the LEAR Credential profile. String containing a nonce to be used when creating a proof of possession of the key proof in the Credential Request endpoint. The Wallet MUST use this nonce value for its subsequent requests until the Credential Issuer provides a fresh nonce.
+                    
+                    - `c_nonce_expires_in`: REQUIRED. Number denoting the lifetime in seconds of the `c_nonce`.
+                    
+                    - `authorization_details`: REQUIRED for the LEAR Credential profile. It is an array of objects, as defined in Section 7 of [[RFC9396]]. In addition to the parameters defined for the `authorization_details` in the Token Request, this specification defines the following parameter to be used with the authorization details type `openid_credential` in the Token Response:
+
+                    <ul>
+                    
+                        - `credential_identifiers`: REQUIRED for the LEAR Credential profile. It is an array containing only one string, uniquely identifying the LEAR Credential. This parameter is used to simplify the Credential Request, where the `credential_identifier` parameter replaces the `format` parameter and any other Credential format-specific parameters in the Credential Request. When received, the Wallet MUST use these values together with an Access Token in subsequent Credential Requests.
 
                 Below is a non-normative example of a Token Response:
 
@@ -1312,6 +1435,26 @@ localBiblioFile: "localbiblio.yaml"
                         "c_nonce": "tZignsnFbp",
                         "c_nonce_expires_in": 86400
                     }
+
+                    HTTP/1.1 200 OK
+                    Content-Type: application/json
+                    Cache-Control: no-store
+
+                    {
+                        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6Ikp..sHQ",
+                        "token_type": "bearer",
+                        "expires_in": 86400,
+                        "c_nonce": "tZignsnFbp",
+                        "c_nonce_expires_in": 86400,
+                        "authorization_details": [
+                        {
+                            "type": "openid_credential",
+                            "credential_configuration_id": "UniversityDegreeCredential",
+                            "credential_identifiers": [ "CivilEngineeringDegree-2023", "ElectricalEngineeringDegree-2023" ]
+                        }
+                        ]
+                    }
+                    ```
 
             <section>Token Error Response
 
