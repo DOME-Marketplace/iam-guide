@@ -29,7 +29,7 @@ localBiblioFile: "localbiblio.yaml"
 
     The mechanism enables authentication and access control of **entities acting on behalf of a legal person** with much more descriptive power and flexibility than trying to use just X.509 certificates of representation, and in a more efficient and automated way than using just signed PDFs.
 
-    The mechanism is aligned with the upcoming EDIW (European Digital Identity Wallet) and its supporting eIDAS2 regulation, but it advances the state of the art by focusing entirely on **legal persons** with an implementation that can be used today without the need to wait for future supporting regulation.
+    The mechanism is aligned with the upcoming EDIW (European Digital Identity Wallet) and its supporting eIDAS2 regulation, but it advances the state of the art by focusing entirely on **legal persons** with an implementation that **can be used today without the need to wait for future supporting regulation**.
     
     In particular, we support natural persons acting on behalf of legal entities (e.g., employees or contractors of a business), interacting with other legal entities. The mechanism is **not recommended for natural persons acting as citizens**, even if technically the mechanism could be adapted. For citizens we recommend to wait for eIDAS2 and EDIW.
     
@@ -427,26 +427,26 @@ localBiblioFile: "localbiblio.yaml"
 
             The LEARCredential uses the `did:elsi` method for the identifiers of legal persons involved in the process, to facilitate the DID resolution and linkage with the eIDAS certificates. The `did:elsi` method is specified in [[[DID-ELSI]]]. But any other suitable DID method can be used if desired.
             
-            The high-level view of the process is described in the following diagram, using as an example a COO (Chief Operating Officer) acting as a legal entity representative and appointing an employee to perform some processes:
+            The high-level view of the process is described in the following diagram, where the legal entity representative of a company appoints an employee to perform some processes with a third party (the Relying Party):
 
             <x-diagram .plantuml>High level view of issuance of LEARCredential to an employee
                 database "Authentic Sources" as registry
                 control "Trust Service Provider" as TSP
                 box "Company" #WhiteSmoke
-                    actor "COO of company" as COO
-                    actor "Employee of company" as employee
+                    actor "Legal Representative" as lr
+                    actor "Employee" as employee
                 end box
                 box "Relying Party" #WhiteSmoke
                     database "Services" as service
                 end box
 
-                COO -> TSP ++: Request a\ncertificate for signatures
+                lr -> TSP ++: Request a\ncertificate for signatures
 
                 TSP <-> registry: Verify trusted data
                 
-                TSP -> COO --: Provide certificate for signature
+                TSP -> lr --: Provide certificate for signature
 
-                COO -> employee: Issue LEARCredential
+                lr -> employee: Issue LEARCredential
                 employee -> service: Access services of Relying Party\nwith LEARCredential
 
 
@@ -660,7 +660,7 @@ localBiblioFile: "localbiblio.yaml"
 
 
 
-    <section>Issuing the LEARCredential using a certificate for signature
+    <section #issuing-lear-credential>Issuing the LEARCredential using a certificate for signature
 
         <section>Overview
 
@@ -672,13 +672,15 @@ localBiblioFile: "localbiblio.yaml"
 
             The participants in the ecosystem in this example are:
 
-            <dl>
+            <x-dl>
 
-                <dt>End-User
-                <dd>This is the employee (or contractor) of a company who will receive the LEAR Credential. The example assumes the existence of secure communication channels, offline or online, between the employee and at least the Human Resources department of the company (or whatever department is in charge of issuing the LEAR Credential to the employee).
+                <x-dt>End-User
+                    
+                    This is the employee (or contractor) of a company who will receive the LEAR Credential. The example assumes the existence of secure communication channels, offline or online, between the employee and at least the Human Resources department of the company (or whatever department is in charge of issuing the LEAR Credential to the employee).
 
-                <dt>Wallet
-                <dd>The wallet is assumed to be a Web application with a wallet backend, maybe implemented as a PWA so it has some offline capabilities and can be installed in the device, providing a user experience similar to a native application. Private key management and most sensitive operations are performed in a backend server, operated by an entity trusted by the end user. However, native applications and completely offline PWA mobile applications are also supported by this profile.
+                <x-dt>Wallet
+                    
+                    The wallet is assumed to be a Web application with a wallet backend, maybe implemented as a PWA so it has some offline capabilities and can be installed in the device, providing a user experience similar to a native application. Private key management and most sensitive operations are performed in a backend server, operated by an entity trusted by the end user. However, native applications and completely offline PWA mobile applications are also supported by this profile.
 
                     This type of wallet supports natural persons, juridical persons and natural persons who are legal entity representatives of juridical persons. For juridical persons the wallet is usually called an `enterprise wallet` but we will use here just the term `wallet` unless the distinction is required.
 
@@ -686,11 +688,13 @@ localBiblioFile: "localbiblio.yaml"
 
                     In other words, from the point of view of the Issuer, the wallet in this profile is almost indistinguishable from a full mobile wallet, and it does not assume a previous relationship with the Wallet.
 
-                <dt>User Laptop
-                <dd>For clarity of exposition, we assume in this profile that the End User starts the interactions with the Issuer with an internet browser (user agent) in her laptop. However, there is nothing in the interactions which limits those interactions to a laptop form factor and the End User can interact with any internet browser in any device (mobile, tablet, kiosk).
+                <x-dt>User Laptop
+                    
+                    For clarity of exposition, we assume in this profile that the End User starts the interactions with the Issuer with an internet browser (user agent) in her laptop. However, there is nothing in the interactions which limits those interactions to a laptop form factor and the End User can interact with any internet browser in any device (mobile, tablet, kiosk).
 
-                <dt>Issuer
-                <dd>In this profile we assume that the Issuer is composed of two components:
+                <x-dt>Issuer
+                    
+                    In this profile we assume that the Issuer is composed of two components:
 
                     <ul>
                         - <b>Issuer backend</b>: the main server implementing the business logic of the Issuer as a web application and additional backend APIs required for issuance of credentials.
@@ -701,7 +705,7 @@ localBiblioFile: "localbiblio.yaml"
                     To simplify the explanation and the examples, we assume that there is only one instance of the Authorization Server for a given instance of the Issuer backend, which is also a common deployment scenario in many companies. We also assume that for external entities, like the Wallet, the two components are under the same domain so they look like one single server entity to the Wallet.
 
 
-            <x-diagram .plantuml>Prueba
+            <x-diagram .plantuml>Overall LEAR Credential issuance flow
                 !include <tupadr3/common>
                 !include <office/Servers/database_server>
                 !include <office/Servers/application_server>
@@ -798,6 +802,7 @@ localBiblioFile: "localbiblio.yaml"
                 box "Employee" #WhiteSmoke
                     actor "Employee" as user
                     participant "<$cell_phone_generic>\nPhone" as wallet
+                    participant "<$device_laptop>\nLaptop" as laptop
                 end box
 
                 box "LEAR Credential Issuer" #WhiteSmoke
@@ -806,6 +811,8 @@ localBiblioFile: "localbiblio.yaml"
 
                 actor "HR employee" as hr
                 actor "Legal Representative" as representative
+
+                user -[hidden]> issuer: This is a hidden message used only to force layout
 
                 hr -> issuer++: **(1)** Enter info about Employee
                 # -(1. Enter information about the Employee)
@@ -837,7 +844,7 @@ localBiblioFile: "localbiblio.yaml"
                 box "Employee" #WhiteSmoke
                     actor "Employee" as user
                     participant "<$cell_phone_generic>\nPhone" as wallet
-                    participant "Laptop" as laptop
+                    participant "<$device_laptop>\nLaptop" as laptop
                 end box
 
                 box "LEAR Credential Issuer" #WhiteSmoke
@@ -862,7 +869,7 @@ localBiblioFile: "localbiblio.yaml"
                     The employee receives an email from the LEAR Credential Issuer with the proper instructions, including a unique `transaction code` that the employee requires to start the process for receiving the LEAR Credential.
                 |||
                 user --> laptop++:  **(3)** Access Issuer portal
-                laptop -> issuer--++:
+                & laptop -> issuer--++:
                 # -(3. Access Issuer portal)
                     The employee enters into the HTML portal provided by the LEAR Credential Issuer (the URL of the portal is well-known, but it is also described in the email)
 
@@ -921,7 +928,7 @@ localBiblioFile: "localbiblio.yaml"
                 box "Employee" #WhiteSmoke
                     actor "Employee" as user
                     participant "<$cell_phone_generic>\nPhone" as wallet
-                    participant "Laptop" as laptop
+                    participant "<$device_laptop>\nLaptop" as laptop
                 end box
 
                 box "LEAR Credential Issuer" #WhiteSmoke
@@ -1079,7 +1086,7 @@ localBiblioFile: "localbiblio.yaml"
                 box "Employee" #WhiteSmoke
                     actor "Employee" as user
                     participant "<$cell_phone_generic>\nPhone" as wallet
-                    participant "Laptop" as laptop
+                    participant "<$device_laptop>\nLaptop" as laptop
                 end box
 
                 box "LEAR Credential Issuer" #WhiteSmoke
@@ -1269,7 +1276,7 @@ localBiblioFile: "localbiblio.yaml"
                 box "Employee" #WhiteSmoke
                     actor "Employee" as user
                     participant "<$cell_phone_generic>\nPhone" as wallet
-                    participant "Laptop" as laptop
+                    participant "<$device_laptop>\nLaptop" as laptop
                 end box
 
                 box "LEAR Credential Issuer" #WhiteSmoke
@@ -2981,6 +2988,147 @@ localBiblioFile: "localbiblio.yaml"
 
                 pep -> user --++: **(12)** Return result
 
+<section>The LEAR Credential as Powers of Representation
+
+    The LEAR Credential is an eMandate, and we base our design in the [[RPaM-Ontology]], which is project project started in 2018 by the Directorate-General for Informatics (DG-DIGIT) of the European Commission, funded by the ISA Programme, to organise and support the development of an ontology about the Representation of Powers and Mandates, from now on the RPaM Ontology.
+
+    Our design is based on the results of that project, with simplifications and specialisations to adapt it the the concrete environment where we intend to use the LEAR Credential. To facilitate the job of the reader, we copy literal sentences from the RPaM Ontology project, and adapt the texts to our requirements. However, the reader is encouraged to access the original documents for more details and understand the original approach, including the <a href="https://everis-rpam.github.io/Glossary.html">RPaM Ontology Glossary</a>.
+
+    <section>Conceptual Model
+
+        <section>Mandate
+
+            According to the RPaM Glossary, a "<i>mandate is a record that describes the terms under which a mandator grants a representation power to a mandatee</i>".
+
+            The following diagram defines the class Mandate and its relations with the other classes of the data model.
+
+            <x-img @"images/rpam/RPaM-Mandate.png">Mandate ontology. Source: [[RPaM-Ontology]]
+
+            <ol>
+                - The Mandate is a type of Evidence.
+
+                - A Mandate has only one Mandator.
+
+                - The Mandator is a specialisation of an (RPaM) Agent. This Agent is an extension of foaf:Agent, and in RPaM, it can be either a natural person, a legal person or a system (i.e. all three descendant of Agent are disjoint amongst themselves; see also the diagram Agent below).
+
+                    <x-note>
+                        For the LEAR Credential we focus on the case where the Mandator is a legal representative of the company, according to the official records associated to the incorporation of the organisation (e.g., the business registry of the country of incorporation).
+
+                - The Mandator draws the Power from one (or more) sources of power, e.g. 1) a concrete Legislation; 2) a piece of evidence (as another Mandate, in which case the mandator was a mandatee in that other mandate) and/or 3) a Natural Person with a specific profession that invest him/her with the authority to order to a mandator with a specific role the creation of a mandate, e.g. a judge authorising a civil servant (a Mandator that is a Natural Person with the appropriate role) to create a mandate for a relative to represent an incapacitated person).
+
+                    <x-note>
+                        For the LEAR Credential, the Mandator is a legal representative of the company and the source of power is the business registry of the country of incorporation (or whatever organism maintains the official records for companies in the given country).
+
+                - In the case where the mandator is "the owner" of the power (i.e. the mandator and the represented person are the same) there is no need of specifying which is the source of the power. From this convention derives the following business rule: "when a mandate does not specify the source of the power, the represented person is the mandator".
+
+                    <x-note>
+                        As described above, we do not handle this case. The Mandator is the legal representative of the company, and the represented person is the company itself.
+
+                - It is for the mandator to grant powers to one or more mandatees (see the definition of Power in the glossary). Thus the power becomes the core entity that links mandator and mandatees in one mandate.
+
+                    <x-note>
+                        For the LEAR Credential, the Mandator (the legal representative of the company) grants a subset of powers from the Mandator to the mandatee (an employee of the company). The legal representative has so-called `General` powers, where the representative can act on behalf of the organisation in any action and for any third-party organisation.
+
+                        The LEAR Credential allows the Mandator to grant a subset of those powers to an employee, to act on behalf of the organisation only for some actions and for one specific organisation or domain (e.g., to onboard in DOME).
+
+                - The class Power is a wrapper for the different types of powers that are defined in an "EU Power Taxonomy". A proposal for this taxonomy has been developed also in the context of the RPaM ontology project. The taxonomy is in fact a compound of three "concept-schemes" around three classes of concepts: action, event and the object of a combined action plus event. See the section "Controlled vocabularies" for more details;
+
+                    <x-note>
+                        Here we deviate from the results of the RPaM project: the RPaM project focuses on the powers applicable to interactions with all the Public Administrations in the EU (which is an incredibly complex task, for many reasons).
+
+                        Our objective is more modest and concrete for two reasons. First, our Power Taxonomy is targeted at the interactions with the DOME Federated Marketplace. This means that the actions are well defined, homogeneous and standardised, essentially the subset of the TMForum APIs used in the implementation of the DOME Marketplace. Additionally, we do not tackle natural persons as citizens, but the Mandator is a legal representative and the Mandatee is an employee of the company. This makes the objective easily achievable, where we are basically replacing the current mecanisms for Mandates (e.g., paper or PDF) with a more efficient, machine-processable representation in the form of a Verifiable Credential.
+
+                        Our Power Taxonomy could be generalised to other actions involving private sector companies, but it is out of scope of the current document.
+
+                - The Powers can be constrained. Thus the use of a Power can be limited through specific properties for both the Mandator and the Mandatee. These properties are “mandatorConstraint” and “mandateeConstraint”.
+
+                    <x-note>
+                        This is an essential property of the LEAR Credential: it is intended for granting only constrained powers to an employee, facilitating a reduced set of interactions with third parties (e.g., the DOME ecosystem).
+
+                - Power Use Constraints (PUC) are represented through "Criterion Properties", which is a class defined in the Core Criterion and Evidence Vocabulary (CCEV) namespace. As a "core" vocabulary this is a very generic vocabulary that allows to define any types of constraints. For instance: period of validity of the Power, financial thresholds, whether the Power is of single-use or multiple-use, etc. These constraints are defined in a code list and are accessible via the property type of the Criterion Property class.
+
+                    <x-note>
+                        In the implementation of the LEAR Credential we use a reduced subset of the CCEV properties, which are more than enough for our needs. However, there is no limit on which ones can be used for other uses if there is the need.
+
+                - In RPaM we reuse the UBL approach for the definition of periods of time. In UBL a Period is a class with a start date and either and end date or a quantity of days, months, years, etc. that indicate the duration of the period. In RPaM we use this ubl:Period class for two different purposes: 1) to specify the life-cycle of a mandate (property lifeSpan), in which case there is the need of specifying always two dates: the start date corresponds to the date when the mandate was created (i.e. registered), and the end date correspond to the date when the mandate was struck-off the registry (i.e. terminated for whatever reason).
+
+                - The mandatee is the person granted with the power to represent (and act as) another person (i.e. to act on behalf of the represented Person).
+
+                    <x-note>
+                        For the LEAR Credential, the Mandatee is the employee who is nominated by the legal representative to perform concrete actions on behalf of the company.
+
+                - Beware that in certain situations for the "acting on behalf of" more than one mandatee simultaneously may be necessary. This is modelled in RPaM through the property "coRepresentative" (a.k.a. "joint representation"): the cardinality 0..n allows to specify as many co-representatives as necessary and therefore can also be profiled to a very specific number of mandatees when/where necessary (i.e. depending of the business case).
+
+                    <x-note>
+                        We do not require (yet) this functionality.
+
+        <section>Agent
+
+            The RPaM Agent reuses other known ontologies such as Friend-of-a-Friend (foaf), the W3C `org:Organization`, the OASIS UBL specification and the ISO 15000-5 Core Component Type Specification (CCTS). In some cases small extesions were added. That is particulary the case of the CCTS Identifier where the attribute "Assurance Level" was added as a need of alignment to the eIDAS Regulation.
+
+            The following diagram represents the entities and relations for the definition of Agent in the context of RPaM:
+
+            <x-img @"images/rpam/RPaM-Agent.png">Agent ontology. Source: [[RPaM-Ontology]]
+
+            <ol>
+                - The definition of Agent, in RPaM, reads: "A natural person, a legal person or a system.". This is coherent with the semantics of the Friend-of-a-friend "Agent" class, from which the RPaM Agent inherits.
+
+                - The Mandator and the Mandatee are specialisations of Agent, and therefore they may be instantiated as a Natural Person, as a Legal Person or as a System;
+
+                - In some countries, in order to properly identify a Natural Person, there is the need to indicate a minimum information about the mother and the father (normally their given and family names). The RPaM ontology solves this by relating the Natural Person class with itself. This way, if some more attributes of the related natural persons were needed in those or other countries they would be available without having to extend the current model.
+
+                    <x-note>
+                        We do not cover natural persons. Or more precisely, the natural persons involved in a LEAR Credential are the legal representative of the company and the employee who will act on behalf of the company. The requirements for these in the context of business relationships are completely different than the ones for Natural Persons referred above. 
+
+                - Systems may be representatives of natural and legal persons. As per today, the legal framework and Public Administrations do not rely on "systems" if the actions to undertake carry responsibility and liability. Nonetheless this is changing rapidly, and one example is the use of automated solutions (systems) that use seals. These types of practices are being included in the EU and MS legislations (e.g. eIDAS) as, in the end, systems are "representatives" of their owners, and as such they need to be identified as surrogates of a Person (normally a Legal Person). The model proposed in RPaM foresees the situation where Systems could act on behalf of a Person, and therefore they could replace the Person they represent as both the Mandator and the Mandatee.
+
+                    <x-note>
+                        While the LEAR Credential supports Systems as representatives, this is not the focus of this version of the document. An upgraded version will describe the LEAR Credential for Systems.
+
+                - Two frequent situations are 1) when multiple organisations use one shared system, and 2) the opposite, when one organisation uses multiple systems. In both cases, but specially in the second one, it is important to identify well to what organisation the system belongs and who is using it. One common way of identifying uniquely the system and checking its rights to interoperate is to register its IP address or a persistent URL, i.e. the system end-point. The combinations of end-point, additional system identifiers, ownership (property "belongsTo"), and the identification(s) of the owner allow to identify who is actually using it and what for. See the diagram Mandate Request and Mandate Response for other examples regarding Service Providers and Mandate Management Systems.
+
+                - The classes like ubl:Contact, ubl:PostalAddress, org:Site, etc., can be used when there is the need of getting in touch with any of the agents, e.g. in the case notifications from the Service Provider to the Mandator and Mandatee could be relevant.
+
+
+    <section>Concrete model
+
+        We now describe the mapping of the conceptual model into the concrete representation of a LEAR Credential.
+
+        In general, powers of representation inside the LEAR Credential MUST contain:
+
+        <ol>
+            - Identification of the legal representative: in general it is a natural person but it may also be a legal person.
+            - Identification of the employee: a natural person.
+            - Type of power of representation: may be `General`, `For an organisation` or `For services`.
+            - Capability granted: may be `All`, `Query`, `Process`, `Receive Notifications`.
+            - Dates of validity of the representation.
+            - Evidences: additional information required to prove the representation.
+            
+        There are three types of powers of representation:
+
+        <ol>
+            - `General`, where the representative can act on behalf of the organisation in any action and for any third-party organisation. We do not use this type because it is too broad and virtually equivalent to a legal representative.
+
+            - `For an organisation`, where the representative can act on behalf of the organisation when using any service provided by a concrete organisation (e.g. for DOME).
+
+            - `For some services`, where the representative can act on behalf of the organisation for a concrete set of services provided by a given organisation.
+
+        
+        Aditionally, the powers of representation must indicate the capabilities, which can be:
+        
+        <ul>
+            - `All`: includes `Process`, `Query` and `Receive notifications`, or
+            
+            - the combination of the partial capabilities (`Process`, `Query` and `Receive notifications`), which can be:
+
+            <ul>
+                - `Process`
+                - `Query`
+                - `Receive notifications`
+                - `Process` and `Query`
+                - `Process`and `Receive notifications`
+                - `Query`and `Receive notifications`
+
 
 <section .appendix #participants>Example scenario: Participants in the ecosystem
 
@@ -3070,7 +3218,8 @@ localBiblioFile: "localbiblio.yaml"
         }
         RealTruth.Sign -> GoodAir.COO: Issue Cert for Signatures {
             style: {
-                font-size: 30            }
+                font-size: 30
+            }
         }
 
         Other_Countries -> TSP1
@@ -3082,7 +3231,7 @@ localBiblioFile: "localbiblio.yaml"
             }
         }
 
-    <section #participant>GoodAir: the company that wants to perform the process
+    <section>GoodAir is a service provider
 
         The new participant is a business providing an Air Quality Monitoring application as a service. The business is called GoodAir and it operates the application, which receives data from a set of sensors that may or may not be the property of GoodAir. The sensors must have received a certification to be able to operate and send data to the GoodAir application.
 
@@ -3090,9 +3239,9 @@ localBiblioFile: "localbiblio.yaml"
 
     <section>COO (Chief Operating Officer) of GoodAir
 
-        The GoodAir company is small and the only person that can sign contracts on behalf of the company is the COO (Chief Operating Officer). The COO is a legal representative of the company and she is registered as so in the business registry of Spain.
+        The GoodAir company is small and one of the legal representatives is the COO (Chief Operating Officer). The COO is registered as a legal representative in the business registry of Spain.
 
-        The COO has a certificate for electronic signatures issued by one of the TSPs in Spain enabling the COO to perform electronic qualified signatures as legal representative of GoodAir, instead of doing them manually.
+        The COO has a certificate for electronic signatures issued by one of the Qualified Trust Service Provider in Spain enabling the COO to perform electronic qualified signatures as legal representative of GoodAir. The COO is used to sign contracts and other legally binding documents in the form of PDFs.
 
         The X.509 certificate of the COO has the following contents in the `Subject` field (the example below is derived from a real certificate but with the identifiers modified to be an example):
 
@@ -3104,9 +3253,8 @@ localBiblioFile: "localbiblio.yaml"
             2.5.4.97 = VATES-12345678
             o = GoodAir
             c = ES
-            2.5.4.13 = Notary:Juan Lopez/Protocol Num:7172/Date:07-06-2021
 
-        The above set of fields bind the legal identity of the COO with the identity of the business:
+        The above set of fields bind the legal identity of the COO with the identity of the business, as attested by the QTSP after checking in the business registry of Spain.
 
         <ul>
             - `serialNumber` is the unique number recognized by the Spanish Government for spanish citizens (called NIF).
@@ -3139,7 +3287,7 @@ localBiblioFile: "localbiblio.yaml"
 
         RealTruth provides `Legal Person Representative Certificates` which are qualified in accordance with Regulation (EU) No. 910/2014 of the European Parliament and of the Council of 23 July 2014 on electronic identification and trust services for electronic transactions in the internal market.
 
-        The certification policies of RealTruth includes the following sentences:
+        The certification policies of RealTruth include the following sentences:
 
         <blockquote>
             The Registration Authority must verify the following information in order to authenticate the identity of the organisation:
@@ -3165,19 +3313,19 @@ localBiblioFile: "localbiblio.yaml"
 
     <section>John Doe: an administrative employee of GoodAir
 
-        This is an employee of the central administration department of GoodAir, who is going to be formally nominated to manage a specific set of processes on behalf of GoodAir in the Data Space. In particular, this employee is going to be nominated as a LEAR (Legal Entity Authorised Representative).
+        This is an employee of the central administration department of GoodAir, who is going to be formally nominated to manage a specific set of processes on behalf of GoodAir in DOME. In particular, this employee is going to be nominated as a LEAR (Legal Entity Authorised Representative).
 
-        As its name implies, the LEAR has to be nominated by a <b>legal representative</b> of the GoodAir organisation with the necessary legal authority to commit the organisation for this type of decision. In our case, the COO of GoodAir will nominate John Doe as the LEAR of GoodAir, delegating to him the capabilities to perform some processes in the DOME portal and some other tasks in other organisations. That means that John Doe will not be empowered to perform cation snot explicitly specified in the credential.
+        As its name implies, the LEAR has to be nominated by a <b>legal representative</b> of the GoodAir organisation with the necessary legal authority to commit the organisation for this type of decision. In our case, the COO of GoodAir will nominate John Doe as the LEAR of GoodAir, delegating to him the capabilities to perform some processes in the DOME portal and some other tasks in other organisations. That means that John Doe will not be empowered to perform actions not explicitly specified in the credential.
 
-        To perform the nomination, the COO of GoodAir (a legal representative of GoodAir) will issue a special credential to John Doe and will sign the credential with his certificate for signatures as legal representative of GoodAir. The details are described later in this document.
+        To perform the nomination, the COO of GoodAir will issue a special credential to John Doe and will sign the credential with his certificate for signatures as legal representative of GoodAir. The details are described in <x-ref "issuing-lear-credential">.
 
-    <section>DOME: an instance of a Data Space for Smart Cities
+    <section>DOME Marketplace: a decentralised marketplace for cloud & edge services
 
-        DOME is a Data Space where local governments can procure data and services from other entities that act as service providers. At the same time, the local governments can also act as data and service providers for other entities in the Data Space.
+        <a href="https://dome-marketplace.eu/">DOME Marketplace</a> is a decentralised federation of marketplace instances where customers can procure certified cloud and edge services from other entities that act as service providers.
 
-        The DOME Data Space has an portal service that allows external entities to perform some processes in an automated fashion by using Verifiable Credentials that have been issued by trusted entities. The complete Trust Framework used by DOME is composed from a series of Trust Frameworks, some managed internally using a governance model of DOME and some others managed externally but by trusted entities. At the root of the Trust Framework of DOME is the eIDAS Trust Framework and the pan-european recognized list of Trust Service Providers issuing the eIDAS compliant digital identities, in the form of certificates for signatures/seals.
+        One of the instances of the federated marketplaces is operated by the DOME Operator, an entity implementing the governance model of the ecosystem. This marketplace instance has a web portal that allows external entities to perform some processes in an automated fashion by using Verifiable Credentials that have been issued by trusted entities. The complete Trust Framework used by DOME is composed from a series of Trust Frameworks, some managed internally using a governance model of DOME and some others managed externally by trusted entities. At the root of the Trust Framework of DOME is the eIDAS Trust Framework and the pan-european recognized list of Trust Service Providers issuing the eIDAS compliant digital identities, in the form of certificates for signatures/seals.
 
-        In order to participate in DOME, every legal person requires a certificate for seals or that one of its legal representatives has a certificate for signatures (or both). The DOME entity is registered in France with VAT number <b>VATFR-99999999</b>.
+        In order to participate in DOME, every legal person requires a certificate for seals, or a certificate for signatures issued to a legal representative (or both). The DOME entity is registered in France with VAT number <b>VATFR-99999999</b>.
 
 
 
