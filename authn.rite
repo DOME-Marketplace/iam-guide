@@ -454,7 +454,7 @@ localBiblioFile: "localbiblio.yaml"
 
         In this section we describe in detail the LEARCredential and for illustrative purpose we use example attributes from a fictitious ecosystem whose participants are described in Appendix <x-ref "participants">.
 
-        In this example the LEARCredential will be generated using the eIDAS certificate of the COO (Chief Operation Officer) of the organisation that will be issuing the credential.
+        In this example the LEARCredential will be generated using the eIDAS certificate of representation of the COO (Chief Operation Officer) of the organisation that will be issuing the credential.
 
         The credential will be generated with an application that the COO will use as Issuer of the LEARCredential and that allows the employee to receive the credential using his credential wallet, using [[OpenID.VCI]] to achieve compliance with the EUDI Wallet ARF.
 
@@ -475,7 +475,9 @@ localBiblioFile: "localbiblio.yaml"
 
             - <b>Advanced/Qualified signature of the credential</b>
 
-        These concepts are elaborated in the following sections. 
+        These concepts are elaborated in the following sections. To facilitate understanding of the concepts and how the LEAR Credential maps with the equivalent mechanism used today with PDFs, we use the textual documents that are used for enrolling an organisation in the <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home">European Commission Funding & tenders</a> system. The forms we use as example are the ones required by the Commission to enable an organisation to appoint a Legal Entity Appointed Representative (LEAR). This is precisely the origin of the name we use for the LEAR Credential. 
+        
+        However, in the example we will generate a LEAR Credential which can be used to interact with the DOME Marketplace described in Appendix <x-ref "participants">, instead of with the EU portal.
 
         <section>Claims identifying the employee
 
@@ -483,12 +485,9 @@ localBiblioFile: "localbiblio.yaml"
                 
             In addition, each organisation can specify their own for enabling access to its products/services. However, it is recommended to use a set of claims that are agreed upon by all participants in the ecosystem unless there are specific requirements for not doing so. This includes not only the amount of claims but also their syntax and semantics.
 
-            For our example, we use the same that are used for accessing the European Commission portal. The claims in the credential are the digital equivalent of their analog counterparts, displayed here for illustration.
+            Te relevant section of the document for the EU Commission Funding & tenders portal is shown here:
 
-            <figure #lear-appointment-letter-1>
-                <img src="images/lear-appointment-letter-1.png" alt="" />
-
-                <figcaption>LEAR subject identification data.
+            <x-fig #lear-appointment-letter-1 @"images/lear-appointment-letter-1.png">LEAR subject identification data.
 
             From the above form we can derive the following claims using the example data:
 
@@ -510,13 +509,11 @@ localBiblioFile: "localbiblio.yaml"
 
             In this example we use the `did:key` method for the DID of the employee, which provides a very high level of privacy and given the way the LEARCredential is generated it supports the verification of the chain of responsibility with a proper level of guarantee.
 
-            If the highest levels of assurance and legal compliance are desired and the employee has an eIDAS certificate for signatures (in this case a personal one, not one like the COO), we could use the `elsi:did` method for identification of the employee. However, the organisation (GoodAir in our example) should make sure that the employee is aware of and agree to the possible privacy implications of doing so, given the personal details leaked from the eIDAS certificate.
+            If the highest levels of assurance and legal compliance are desired and the employee has an eIDAS certificate for signatures (in this case a personal one would be enough, not one like the COO), we could use the `elsi:did` method for identification of the employee. However, the organisation (GoodAir in our example) should make sure that the employee is aware of and agree to the possible privacy implications of doing so, given the personal details leaked from the eIDAS certificate. In any case, if the business interactions the the employee will perform already require some personal details to be in the LEAR Credential (as in the example with the EU Commission used here), using an eIDAS personal certificate of the employee should not be a problem. However, we keep using the `did:key` identifier for the employee, to show how the system can work with it and ensure complete privacy if required.
 
             Those personal details are exactly the same as if the employee signs any document with a digital certificate, but care should be taken by the organisation because in this case the signature would be done "on behalf of" his employer and not as an individual personal action.
 
-            Even though this is not unique to the `did:elsi` method, this also implies that the onboarding service has to handle those personal details in the same way as if it would be accepting any other document signed with a certificate for signatures, and ensure compliance with GDPR. This is "business as usual" when using digital signatures, but we want to make sure that this is taken care of when implementing the authentication and access control mechanisms described here.
-
-            In this example we assume the usage of the `did:key` method for the employee to protect his privacy as much as possible.
+            Even though this is not unique to the `did:elsi` method, this also implies that the onboarding service has to handle those personal details in the same way as if it would be accepting any other document signed with a certificate for signatures, and ensure compliance with GDPR. This is "business as usual" when using digital signatures, but we want to make sure that this is taken care of when implementing the authentication and access control mechanisms described in this document.
 
             This DID for the employee is an additional claim to the ones presented above, using the `id` field in the `credentialSubject` object.
             
@@ -533,7 +530,7 @@ localBiblioFile: "localbiblio.yaml"
                     "id": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
                 }
 
-            In this example, the signatures performed with the private key can not be JAdES-compliant ([[JAdES]]), but if the LEARCredential is attached to any other credential that is signed with this private key, then they can be traced up to the eIDAS certificate of the COO and so the chain of responsibility can be determined..
+            In this example, the signatures performed with the private key can not be JAdES-compliant ([[JAdES]]), but if the LEARCredential is attached to any other credential that is signed with this private key, then they can be traced up to the eIDAS certificate of the COO and so the chain of responsibility can be determined, up to the root of trust which is the identity of the trust service used by the QTSP that issued the eIDAS certificate of the COO of the company.
 
             With the DID for the employee, the set of claims identifying him would be then:
 
@@ -553,7 +550,7 @@ localBiblioFile: "localbiblio.yaml"
 
         <section>legalRepresentative
 
-            This section identifies the natural person (the COO) who is a legal representative of the legal person (GoodAir) and that is nominating the employee identified in the credential.
+            This section identifies the natural person (the COO of GoodAir in our example) who is a legal representative of the legal person (GoodAir) and that is nominating the employee identified in the credential.
 
             <x-code .json>
                 "legalRepresentative": {
@@ -597,6 +594,39 @@ localBiblioFile: "localbiblio.yaml"
                         "id": "https://dome-marketplace.eu//lear/v1/6484994n4r9e990494"
                     }
                 ]
+
+            <x-code .json>
+                "mandate": {
+                    "mandator": {
+                        "cn": "56565656V Jesus Ruiz",
+                        "serialNumber": "56565656V",
+                        "organizationIdentifier": "VATES-12345678",
+                        "o": "GoodAir",
+                        "c": "ES"
+                    }
+                    "powers": [
+                        {
+                            "powerID": "uri to specific power being delegated",
+                            "status": "skos:Concept with status of the delegation",
+                            "mandatorConstraints": [
+                                {
+                                    "id": "identifier of the constraint",
+                                    "name": "the name of the constraint",
+                                    "type": "rpam:ConstraintType"
+                                }
+                            ],
+                            "mandateeConstraints": [
+                                    "id": "identifier of the constraint",
+                                    "name": "the name of the constraint",
+                                    "type": "rpam:ConstraintType"
+                            ]
+                        }
+                    ],
+                    "lifeSpan": {
+                        "startDateTime": "start time when mandate is valid",
+                        "endDateTime": "time when the mandate expires",
+                    }
+                }
 
             Where the last part of the url can correspond to the hash of the external linked document to ensure that any modification or tampering can be detected. The contents of that object at that url could be:
 
@@ -660,7 +690,7 @@ localBiblioFile: "localbiblio.yaml"
 
 
 
-    <section #issuing-lear-credential>Issuing the LEARCredential using a certificate for signature
+    <section #issuing-lear-credential>Issuing the LEARCredential using an eIDAS certificate for signature
 
         <section>Overview
 
