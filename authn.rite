@@ -23,9 +23,14 @@ og_site_name: Authn with Verifiable Credentials
 localBiblioFile: "localbiblio.yaml"
 ---
 
+<h1 #title>Authentication and authorization of entities acting on behalf of legal persons with Verifiable Credentials under eIDAS framework
+<h2 #subtitle>Implementing efficient Powers of Representation with the `LEAR Credential` and `did:elsi` 
+
+
+
 <section #abstract>
 
-    We describe a mechanism enabling **Decentralised Identity and Access Management in B2B** ecosystems which require a high level of legal certainty, reduced manual processes and reduced dependency in third parties for the operation of the ecosystem. The mechanism combines eIDAS X.509 certificates issued by QTSPs with advanced or qualified signatures and seals of Verifiable Credentials. 
+    We describe a mechanism for efficient **Decentralised Identity and Access Management in B2B** ecosystems, enabling a high level of legal certainty, reduced manual processes and reduced dependency in third parties for the operation of the ecosystem. The mechanism uses eIDAS X.509 certificates issued by a <x-ref "qualified trust service provider"> (QTSP), combined with advanced or qualified signatures and seals of Verifiable Credentials, to implement an eMandate document (delegation of powers) which can be used for authentication and authorisation using the delegated powers inside the credential. 
 
     The mechanism enables authentication and access control of **entities acting on behalf of a legal person** with much more descriptive power and flexibility than trying to use just X.509 certificates of representation, and in a more efficient and automated way than using just signed PDFs.
 
@@ -36,13 +41,13 @@ localBiblioFile: "localbiblio.yaml"
     The mechanism leverages Verifiable Credentials and the existing eIDAS framework by:
     
     <ul>
-        - making the credential a **machine-readable e-mandate** by embedding authorisation information in the credential using a formal language and binding it to the identities of the issuer and subject.
+        - making the credential a **machine-readable e-mandate** by embedding authorisation information in the credential (in the form of delegation of powers) using a formal language and binding it to the identities of the issuer and subject.
         - making the credential a **legally binding document** under the [[eIDAS]] framework, by signing the credential with an advanced or qualified seal/signature.
         - making the credential an **authentication mechanism**, by binding the identities of the subject and holder of the credential so it can be used for authentication.
     
     In this way, the credential is a **legally binding machine-readable document where the issuer attests that it delegates the set of powers specified in the credential to the user identified as the subject of the credential**.
     
-    The subject can then **use the credential to authenticate to a Relying Party** because the identities of holder and subject of the credential are bound.
+    The subject can then **use the credential to authenticate to a Relying Party** because the identities of holder and subject of the credential are bound to the same identity.
 
     This mechanism leverages the eIDAS trust framework using advanced or qualified signatures and seals to provide a **high level of legal certainty and enjoying the presumption of non-repudiation in the courts**, something that does not happen when using other types of basic signatures.
 
@@ -61,17 +66,17 @@ localBiblioFile: "localbiblio.yaml"
 
             <figcaption>—[[[eIDAS2.Regulation]]]
 
-        The traditional way to solve this is by using cumbersome processes associated to onboarding and Know-Your-Customer (KYC) procedures, in many cases manual processes and paper/PDF documents that the Relying Party verifies until it is satisfied with the level of legal risk assumed when allowing a Principal to access some services on behalf of the Participant. Those setup processes are normally cumbersome, slow and people-intensive, creating a lot of friction in the initial stages of using a service, especially when strong identification is required by the nature of the service.
+        The traditional way to solve the problem of powers of representation is by using cumbersome processes associated to onboarding and Know-Your-Customer (KYC) procedures, in many cases manual processes and paper/PDF documents that the Relying Party verifies until it is satisfied with the level of legal risk assumed when allowing a Principal to access some services on behalf of the Participant. Those setup processes are normally cumbersome, slow and people-intensive, creating a lot of friction in the initial stages of using a service, especially when strong identification is required by the nature of the service.
 
-        Standard eIDAS certificates of representation can help (see an example QTSP <a href="https://eadtrust.eu/en/electronic-certificates/legal-entity-representative/">Certificate of Legal Entity Representative</a>), but they tend to be for natural persons with full powers or for very standard use cases.
+        Standard eIDAS certificates of representation can help (see an example <a href="https://eadtrust.eu/en/electronic-certificates/legal-entity-representative/">Certificate of Legal Entity Representative</a> issued by a qualified trust service provider), but they tend to be for natural persons with full powers of representation, or for very standard use cases.
 
-        For a more granular specification of the powers of a natural person when acting on behalf of a legal person, other solutions have been implemented in different Member States, but they are typically centralised, non-interoperable among them and limited to the services provided by the Public Administration. In the private sector there is not any standardised solution and basically every company does it their own way.
+        For a more granular specification of the powers of a natural person when acting on behalf of a legal person, other solutions have been implemented in different Member States, but they are typically centralised, non-interoperable among countries and limited to the services provided by the Public Administration. In the private sector there is not any standardised solution and basically every company does it their own way.
 
-        **Verifiable Credentials** can become a good instrument to implement a machine-readable and legally-binding e-mandate with much more descriptive power and flexibility than trying to use just certificates of representation, while maintaining the same level of compliance and legal risk than with traditional processes, and this is the reason why it is included in the objectives of the upcoming eIDAS2 regulation.
+        **Verifiable Credentials** can be a good instrument to implement a machine-readable and legally-binding e-mandate with much more descriptive power and flexibility than trying to use just certificates of representation, while maintaining the same level of compliance and legal risk than with traditional processes, and this is the reason why it is included in the objectives of the upcoming eIDAS2 regulation.
 
-        However, currently there are important barriers that hinder the adoption of an EU-wide solution for cross-border transfer of representation information, being one of the most relevant the **lack of a common semantic framework**. 
+        However, currently there are important barriers that hinder the adoption of an EU-wide solution for cross-border transfer of representation information, one of the most relevant being the **lack of a common semantic framework**. 
         
-        Representation is complex, and electronic mandates schemes and policies are basically national and usually do not contemplate the possibility to use those mandates in cross-border scenarios. The problem of mandates when accessing services from a Public Administration is extremely complex, so **we will focus here on the private sector**: when both the Relying Party and the Participant are legal persons from the private sector.
+        Representation is complex, and electronic mandates schemes and policies are basically national and usually do not contemplate the possibility to use those mandates in cross-border scenarios. The problem of mandates when accessing services from a Public Administration is extremely complex, so **we focus here on the private sector**: when the Relying Party is a legal person from the private sector.
 
         In order to have a simple, flexible and powerful mechanism using Verifiable Credentials, the main requirements are the following:
 
@@ -450,13 +455,13 @@ localBiblioFile: "localbiblio.yaml"
                 employee -> service: Access services of Relying Party\nwith LEARCredential
 
 
-    <section>The LEARCredential through an example
+    <section>Introduction to the LEARCredential through an example
 
         In this section we describe in detail the LEARCredential and for illustrative purpose we use example attributes from a fictitious ecosystem whose participants are described in Appendix <x-ref "participants">.
 
-        In this example the LEARCredential will be generated using the eIDAS certificate of representation of the COO (Chief Operation Officer) of the organisation that will be issuing the credential.
+        In this example the LEARCredential will be generated using the eIDAS certificate of representation of the COO (Chief Operation Officer) of the organisation that will be issuing the credential (GoodAir).
 
-        The credential will be generated with an application that the COO will use as Issuer of the LEARCredential and that allows the employee to receive the credential using his credential wallet, using [[OpenID.VCI]] to achieve compliance with the EUDI Wallet ARF.
+        The credential will be generated with an application that the COO will use as Issuer of the LEARCredential and that allows the employee to receive the credential using his credential wallet, using [[OpenID.VCI]] to achieve compliance with the EDIW Wallet ARF.
 
         This application enables the COO to attest the information required to create the LEARCredential, specifying the employee information and the specific type of LEARCredential. In general, there may be different instances of LEARCredentials for different purposes. One employee can have more than one LEARCredential, each having a different delegation of powers for different environments.
 
@@ -465,42 +470,39 @@ localBiblioFile: "localbiblio.yaml"
         The essential components of a LEARCredential are the following:
 
         <ul>
-            - <b>Claims identifying the employee</b>
+            - <b>Claims identifying the employee who is appointed to be a LEAR</b>
 
             - <b>DID of the employee to enable authentication</b>
 
             - <b>Claims identifying the legal representative</b>
 
-            - <b>The roles and duties of the LEAR</b>
+            - <b>The specific powers delegated by the legal representative to the employee</b>
 
             - <b>Advanced/Qualified signature of the credential</b>
 
         These concepts are elaborated in the following sections. To facilitate understanding of the concepts and how the LEAR Credential maps with the equivalent mechanism used today with PDFs, we use the textual documents that are used for enrolling an organisation in the <a href="https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/home">European Commission Funding & tenders</a> system. The forms we use as example are the ones required by the Commission to enable an organisation to appoint a Legal Entity Appointed Representative (LEAR). This is precisely the origin of the name we use for the LEAR Credential. 
         
-        However, in the example we will generate a LEAR Credential which can be used to interact with the DOME Marketplace described in Appendix <x-ref "participants">, instead of with the EU portal.
+        However, one difference is that in the example we will generate a LEAR Credential which can be used to interact with the DOME Marketplace described in Appendix <x-ref "participants">, instead of with the Funding & tenders portal.
 
-        <section>Claims identifying the employee
+        <section>Claims identifying the employee (the mandatee)
 
             These are claims identifying the subject of the credential, the person who will act as LEAR. Each ecosystem can define their own depending on their specific requirements.
                 
             In addition, each organisation can specify their own for enabling access to its products/services. However, it is recommended to use a set of claims that are agreed upon by all participants in the ecosystem unless there are specific requirements for not doing so. This includes not only the amount of claims but also their syntax and semantics.
 
-            Te relevant section of the document for the EU Commission Funding & tenders portal is shown here:
+            The relevant section of the document for the EU Commission Funding & tenders portal is shown here:
 
-            <x-fig #lear-appointment-letter-1 @"images/lear-appointment-letter-1.png">LEAR subject identification data.
+            <x-img #"lear-appointment-letter-1" @"images/lear-appointment-letter-1.png">LEAR subject identification data.
 
             From the above form we can derive the following claims using the example data:
 
             <x-code .json>
-                {
+                "mandatee": {
                     "title": "Mr.",
                     "first_name": "John",
                     "last_name": "Doe",
                     "gender": "M",
-                    "postal_address": "",
                     "email": "johndoe@goodair.com",
-                    "telephone": "",
-                    "fax": "",
                     "mobile_phone": "+34787426623"
                 }
 
@@ -535,25 +537,22 @@ localBiblioFile: "localbiblio.yaml"
             With the DID for the employee, the set of claims identifying him would be then:
 
             <x-code .json>
-                {
+                "mandatee": {
                     "id": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
                     "title": "Mr.",
                     "first_name": "John",
                     "last_name": "Doe",
                     "gender": "M",
-                    "postal_address": "",
                     "email": "johndoe@goodair.com",
-                    "telephone": "",
-                    "fax": "",
                     "mobile_phone": "+34787426623"
                 }
 
-        <section>legalRepresentative
+        <section>legalRepresentative (the mandator)
 
             This section identifies the natural person (the COO of GoodAir in our example) who is a legal representative of the legal person (GoodAir) and that is nominating the employee identified in the credential.
 
             <x-code .json>
-                "legalRepresentative": {
+                "mandator": {
                     "cn": "56565656V Jesus Ruiz",
                     "serialNumber": "56565656V",
                     "organizationIdentifier": "VATES-12345678",
@@ -571,77 +570,53 @@ localBiblioFile: "localbiblio.yaml"
                 In the case of natural persons refer to the <a href="https://joinup.ec.europa.eu/asset/core_person/asset_release/core-person-vocabulary">Core Person Vocabulary</a> and in the case of legal persons refer to definitions for <a href="https://joinup.ec.europa.eu/asset/core_business/asset_release/core-business-vocabulary">Core Business Vocabulary</a>.
 
 
-        <section>Roles and Duties of the LEAR
+        <section>Roles and Duties of the LEAR: the powers of representation
 
-            The LEARCredential should include a formal description with the roles and duties of the LEAR. This is the digital equivalent to the analog description in our example, which uses natural language:
+            The LEARCredential should include a formal description with specific powers that are delegated by the legal representative (mandator) to the employee (mandatee). In the example with the LEAR for the EU Funding & tenders portal, it corresponds to the roles and duties of the LEAR. The analog description in our example, which uses natural language is:
 
             <figure #lear-appointment-letter-2>
                 <img src="images/lear-appointment-letter-2.png" alt="" />
 
                 <figcaption>LEAR roles and duties.
 
-            <x-note>
-                We do not yet have defined the actual mechanism that will be used for describing formally the roles and duties of the LEAR. The way we specify them below is just an example. There is work ongoing to define the detailed mechanism formally (e.g. with ODRL), and it is expected to change. This example is intended only to describe the concepts in detail.
-
-            The `rolesAndDuties` object points to an externally hosted object with the roles and duties of the LEAR. This external object can be either a machine-interpretable definition of the roles and duties in the credential, or just an external definition of the roles and duties in natural language. The ideal approach is the first option, expressing the semantics with a proper machine-readable language, because this will allow automatic access control at the granularity of the individual sentences of that expression language. The `rolesAndDuties` object can also have the definition embedded into it, instead of having a pointer to an external object.
-
-            A simplistic implementation of the object inside the credential could be:
-
-            <x-code .json>
-                "rolesAndDuties": [
-                    {
-                        "type": "LEARCredential",
-                        "id": "https://dome-marketplace.eu//lear/v1/6484994n4r9e990494"
-                    }
-                ]
+            When we translate this section to a formal language to represent powers of representation, the object inside the credential could be:
 
             <x-code .json>
                 "mandate": {
+                    "id": "bb1482e1-0513-4c90-9c80-98a2e4d14984",
                     "mandator": {
                         "cn": "56565656V Jesus Ruiz",
                         "serialNumber": "56565656V",
                         "organizationIdentifier": "VATES-12345678",
                         "o": "GoodAir",
                         "c": "ES"
-                    }
-                    "powers": [
+                    },
+                    "mandatee": {
+                        "id": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+                        "title": "Mr.",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "gender": "M",
+                        "email": "johndoe@goodair.com",
+                        "mobile_phone": "+34787426623"
+                    },
+                    "power": [
                         {
-                            "powerID": "uri to specific power being delegated",
-                            "status": "skos:Concept with status of the delegation",
-                            "mandatorConstraints": [
-                                {
-                                    "id": "identifier of the constraint",
-                                    "name": "the name of the constraint",
-                                    "type": "rpam:ConstraintType"
-                                }
-                            ],
-                            "mandateeConstraints": [
-                                    "id": "identifier of the constraint",
-                                    "name": "the name of the constraint",
-                                    "type": "rpam:ConstraintType"
-                            ]
+                            "id": "53493323798",
+                            "tmf:type": "Domain",
+                            "tmf:name": ["DOME"],
+                            "tmf:function": "Onboarding",
+                            "tmf:action": ["Process"]
                         }
                     ],
                     "lifeSpan": {
-                        "startDateTime": "start time when mandate is valid",
-                        "endDateTime": "time when the mandate expires",
+                        "startDateTime": "2023-10-01",
+                        "endDateTime": "2025-10-01"
                     }
                 }
 
-            Where the last part of the url can correspond to the hash of the external linked document to ensure that any modification or tampering can be detected. The contents of that object at that url could be:
 
-            <x-code .json>
-                [
-                    {
-                        "id": "https://dome-marketplace.eu//lear/v1/6484994n4r9e990494",
-                        "target":"https://bae.dome-marketplace.eu/"
-                        "roleNames": ["seller", "customer"]
-                    }
-                ]
-
-            In the above example, we have specified that the roles object referenced in the credential with `id: https://dome-marketplace.eu//lear/v1/6484994n4r9e990494` is granting the employee of GoodAir (in our example) to access services in the DOME marketplace (specified with the field `target`) with the roles `seller` and `customer` (which are the roles of the <a href="https://business-api-ecosystem.readthedocs.io/en/latest/index.html">FIWARE BAE component</a>).
-
-            If `target` is omitted, the roles would apply to any target organisation. If we need to specify more than one target organisation, the array should include as many objects as required.
+            In the above example, we have specified that the `mandator` (the legal representative) has delegated to the `mandatee` (the employee) one single power to access services in the DOME ecosystem (specified with the fields `type` and `name`) with the specific capability to perform the onboarding of the company in the DOME ecosystem (specified with the fields `function`and `action`). The actual data model, which can be used to express mor complex delegations is described in more detail in another section of the document.
 
         <section>Assembling the pieces together
 
@@ -650,41 +625,50 @@ localBiblioFile: "localbiblio.yaml"
             <x-code .json>
                 {
                     "@context": [
-                        "https://www.w3.org/2018/credentials/v1",
-                        "https://dome-marketplace.eu//2022/credentials/learcredential/v1"
+                        "https://www.w3.org/ns/credentials/v2",
+                        "https://dome-marketplace.eu/2022/credentials/learcredential/v1"
                     ],
                     "id": "urn:did:elsi:25159389-8dd17b796ac0",
-                    "type": ["VerifiableCredential", "LEARCredential"],
+                    "type": ["VerifiableCredential", "LEARCredentialEmployee"],
                     "issuer": {
                         "id": "did:elsi:VATES-12345678"
                     },
-                    "issuanceDate": "2022-03-22T14:00:00Z",
-                    "validFrom": "2022-03-22T14:00:00Z",
-                    "expirationDate": "2023-03-22T14:00:00Z",
+                    "issuanceDate": "2024-03-22T14:00:00Z",
+                    "validFrom": "2024-03-22T14:00:00Z",
+                    "expirationDate": "2025-03-22T14:00:00Z",
                     "credentialSubject": {
-                        "id": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
-                        "title": "Mr.",
-                        "first_name": "John",
-                        "last_name": "Doe",
-                        "gender": "M",
-                        "postal_address": "",
-                        "email": "johndoe@goodair.com",
-                        "telephone": "",
-                        "fax": "",
-                        "mobile_phone": "+34787426623",
-                        "legalRepresentative": {
-                            "cn": "56565656V Jesus Ruiz",
-                            "serialNumber": "56565656V",
-                            "organizationIdentifier": "VATES-12345678",
-                            "o": "GoodAir",
-                            "c": "ES"
-                        },
-                        "rolesAndDuties": [
-                            {
-                                "type": "LEARCredential",
-                                "id": "https://dome-marketplace.eu//lear/v1/6484994n4r9e990494"
+                        "mandate": {
+                            "id": "bb1482e1-0513-4c90-9c80-98a2e4d14984",
+                            "mandator": {
+                                "cn": "56565656V Jesus Ruiz",
+                                "serialNumber": "56565656V",
+                                "organizationIdentifier": "VATES-12345678",
+                                "o": "GoodAir",
+                                "c": "ES"
+                            },
+                            "mandatee": {
+                                "id": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+                                "title": "Mr.",
+                                "first_name": "John",
+                                "last_name": "Doe",
+                                "gender": "M",
+                                "email": "johndoe@goodair.com",
+                                "mobile_phone": "+34787426623"
+                            },
+                            "power": [
+                                {
+                                    "id": "53493323798",
+                                    "tmf:type": "Domain",
+                                    "tmf:domain": ["DOME"],
+                                    "tmf:function": "Onboarding",
+                                    "tmf:action": ["Process"]
+                                }
+                            ],
+                            "lifeSpan": {
+                                "startDateTime": "2024-03-22T14:00:00Z",
+                                "endDateTime": "2025-03-22T14:00:00Z"
                             }
-                        ]
+                        }
                     }
                 }
 
@@ -804,7 +788,7 @@ localBiblioFile: "localbiblio.yaml"
 
                 
                 representative -> issuer: **(6)** Signs the Credential
-                # -(6. Signs the Credential)
+                # -(6. The legal representative signs the Credential)
 
                     The legal representative reviews the credential and signs it using her eIDAS certificate.
 
@@ -929,12 +913,6 @@ localBiblioFile: "localbiblio.yaml"
                         <figcaption>QR code with URL to Credential Offer
 
 
-
-
-            <figure #iss-authentication_1>
-                <img src="images/issuance/issuance_authentication.svg" alt="" />
-
-                <figcaption>Issuance authentication.
 
             <x-note>Authentication
 
@@ -1189,7 +1167,7 @@ localBiblioFile: "localbiblio.yaml"
                 wallet <-> issuer: **(9)** Obtains Issuer's Credential Issuer metadata
                 # -(9. Wallet obtains Issuer's Credential Issuer metadata)
                     
-                    The Wallet retrieves the Credential Issuer's configuration using the Credential Issuer Identifier, the `credential_issuer' field in the Credential Offer received before, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
+                    The Wallet retrieves the Credential Issuer's configuration using the Credential Issuer Identifier, the `credential_issuer` field in the Credential Offer received before, as described in <a href="https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html#section-11.2">Section 11.2</a> of [[OpenID.VCI]]. The Wallet needs the metadata to learn the Credential types and formats that the Credential Issuer supports, and to determine the Token Endpoint (at the OAuth 2.0 Authorization Server, which in this case it is the same LEAR Credential Issuer) as well as the Credential Endpoint required to start the request.)
 
 
             <section>Credential Issuer Metadata Parameters
@@ -1456,7 +1434,7 @@ localBiblioFile: "localbiblio.yaml"
 
                     <ul>
                     
-                        - `credential_identifiers`: REQUIRED for the LEAR Credential profile. It is an array containing only one string, uniquely identifying the LEAR Credential. This parameter is used to simplify the Credential Request, where the `credential_identifier` parameter replaces the `format` parameter and any other Credential format-specific parameters in the Credential Request. When received, the Wallet MUST use these values together with an Access Token in subsequent Credential Requests.
+                        - `credential_configuration_id`: REQUIRED for the LEAR Credential profile. It is an array containing only one string, uniquely identifying the LEAR Credential and MUST be `LEARCredentialEmployee`.
 
                 Below is a non-normative example of a Token Response:
 
@@ -1470,28 +1448,14 @@ localBiblioFile: "localbiblio.yaml"
                         "token_type": "bearer",
                         "expires_in": 86400,
                         "c_nonce": "tZignsnFbp",
-                        "c_nonce_expires_in": 86400
-                    }
-
-                    HTTP/1.1 200 OK
-                    Content-Type: application/json
-                    Cache-Control: no-store
-
-                    {
-                        "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6Ikp..sHQ",
-                        "token_type": "bearer",
-                        "expires_in": 86400,
-                        "c_nonce": "tZignsnFbp",
                         "c_nonce_expires_in": 86400,
                         "authorization_details": [
-                        {
-                            "type": "openid_credential",
-                            "credential_configuration_id": "UniversityDegreeCredential",
-                            "credential_identifiers": [ "CivilEngineeringDegree-2023", "ElectricalEngineeringDegree-2023" ]
-                        }
+                            {
+                                "type": "openid_credential",
+                                "credential_configuration_id": "UniversityDegreeCredential"
+                            }
                         ]
                     }
-                    ```
 
             <section>Token Error Response
 
@@ -3164,11 +3128,6 @@ localBiblioFile: "localbiblio.yaml"
             The Taxonomy has been built based on the TM Forum "User Roles and Permissions Management API", around these main concepts:
 
             <ul>
-                -(action): Level of access granted as part of the permission.
-                -(function): Specific function that can be managed over a given asset.
-                -(manageableAsset): 
-
-
                 - A **manageable asset** is the realization of something that can be used and managed by users (e.g.: any of the resources created as part of a purchased product, a service provided to individuals, a block of personal data of an individual, a shopping cart entity….. ).
                 
                 - An **user** is the individual who can make use and manage the functions exposed by a given manageable asset. It can be the existing registered customer or any other individual who has been granted access to use and/or manage the asset   
