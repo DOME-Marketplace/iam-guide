@@ -3159,6 +3159,34 @@ localBiblioFile: "localbiblio.yaml"
                 - `Process`and `Receive notifications`
                 - `Query`and `Receive notifications`
 
+        <section>DOME Power Taxonomy
+
+            The Taxonomy has been built based on the TM Forum "User Roles and Permissions Management API", around these main concepts:
+
+            <ul>
+                -(action): Level of access granted as part of the permission.
+                -(function): Specific function that can be managed over a given asset.
+                -(manageableAsset): 
+
+
+                - A **manageable asset** is the realization of something that can be used and managed by users (e.g.: any of the resources created as part of a purchased product, a service provided to individuals, a block of personal data of an individual, a shopping cart entity….. ).
+                
+                - An **user** is the individual who can make use and manage the functions exposed by a given manageable asset. It can be the existing registered customer or any other individual who has been granted access to use and/or manage the asset   
+                
+                - A basic **permission** provides information regarding the access privileges of a given user over manageable assets (or different functions within each asset).
+                
+                - A **privilege** defines an independent allowed access level over any of the operations that can be performed over a given asset (e.g.: CRUD on the different menu/function/UI elements)
+                
+                - A **user role** is defined as the entity that defines a set of privileges covering various functions and/or manageable assets. When a user is assigned a given role then it is actually allocated all the privileges defined for that roletype and the corresponding permissions are created for that user  
+
+            A Privilege is a detailed information concerning an individual access entitlement.
+
+            <ul>
+                -(action): Level of access granted as part of the permission.
+                -(function): Specific function that can be managed over a given asset.
+                -(id): Identifier of the privilege.
+                -(manageableAsset): An entity reference (EntityRef). Entity reference schema to be use for all entityRef class. 
+
 
 <section .appendix #participants>Example scenario: Participants in the ecosystem
 

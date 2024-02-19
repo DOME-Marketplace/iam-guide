@@ -3548,6 +3548,41 @@ access_token=[the access token]
                 </li>
             </ul>
         </ul>
+        <section id='DOME Power Taxonomy'><h2>DOME Power Taxonomy</h2>
+
+            <p>The Taxonomy has been built based on the TM Forum "User Roles and Permissions Management API", around these main concepts:
+            </p>
+            <ul>
+                <li id='action_3167'><b>action</b>: Level of access granted as part of the permission.
+                </li>
+                <li id='function_3168'><b>function</b>: Specific function that can be managed over a given asset.
+                </li>
+                <li id='manageableAsset_3169'><b>manageableAsset</b>:
+                </li>
+                <li>A <b>manageable asset</b> is the realization of something that can be used and managed by users (e.g.: any of the resources created as part of a purchased product, a service provided to individuals, a block of personal data of an individual, a shopping cart entity….. ).
+                </li>
+                <li>An <b>user</b> is the individual who can make use and manage the functions exposed by a given manageable asset. It can be the existing registered customer or any other individual who has been granted access to use and/or manage the asset
+                </li>
+                <li>A basic <b>permission</b> provides information regarding the access privileges of a given user over manageable assets (or different functions within each asset).
+                </li>
+                <li>A <b>privilege</b> defines an independent allowed access level over any of the operations that can be performed over a given asset (e.g.: CRUD on the different menu/function/UI elements)
+                </li>
+                <li>A <b>user role</b> is defined as the entity that defines a set of privileges covering various functions and/or manageable assets. When a user is assigned a given role then it is actually allocated all the privileges defined for that roletype and the corresponding permissions are created for that user
+                </li>
+            </ul>
+            <p>A Privilege is a detailed information concerning an individual access entitlement.
+            </p>
+            <ul>
+                <li id='action_3185'><b>action</b>: Level of access granted as part of the permission.
+                </li>
+                <li id='function_3186'><b>function</b>: Specific function that can be managed over a given asset.
+                </li>
+                <li id='id_3187'><b>id</b>: Identifier of the privilege.
+                </li>
+                <li id='manageableAsset_3188'><b>manageableAsset</b>: An entity reference (EntityRef). Entity reference schema to be use for all entityRef class.
+                </li>
+            </ul>
+        </section>
     </section>
 </section>
 <section id='participants' class='appendix'><h2>Example scenario: Participants in the ecosystem</h2>
