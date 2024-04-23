@@ -3,11 +3,12 @@
     "emeraldwalk.runonsave": {
 
 
+
         "autoClearConsole": true,
         "commands": [
             {
                 "match": "\\.rite",
-                "cmd": "rite authn.rite"
+                "cmd": "rite ${file}"
             }
         ]
     },
